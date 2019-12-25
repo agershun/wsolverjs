@@ -1,2 +1,7 @@
-# wsolver
-WIP: JavaScript/AssemblyScript solver for linear programming (brute-force, simplex and interior-point methods)
+# wsolver - AssemblyScript linear programming solver (WIP)
+
+The solver supports the following methods:
+* brute-force
+* simplex 
+* interior-point methods)
+
