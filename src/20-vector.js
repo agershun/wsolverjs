@@ -20,6 +20,9 @@ class Vector {
 	}
 
 	static init(data) {
+		if(data instanceof Vector) {
+			return data;
+		}
 		const v = new Vector(data.length);
 		v.data = data;
 		return v;
@@ -28,13 +31,25 @@ class Vector {
 	// a.dot(b)
 
 	dot(b) {
-		// TODO - add verification for a Matrix class
-		// if(b instanceof 'Matrix') {}
-		let res = 0;
-		for(let i=0;i<this.size;i++) {
-			res += this.data[i]*b.data[i];
+		if(b instanceof Matrix) {
+
+			// TODO - add verification for a Matrix class
+
+		} if(b instanceof Vector) {
+			let res = 0;
+			for(let i=0;i<this.size;i++) {
+				res += this.data[i]*b.data[i];
+			}
+			return res;			
+		} else if (typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r *= b;
+			}
+			return r;
+		} else {
+			throw 'wring type'
 		}
-		return res;
 	}	
 
 	clone() {

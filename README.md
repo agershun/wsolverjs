@@ -5,6 +5,13 @@ The solver supports the following methods:
 * simplex 
 * interior-point methods)
 
+## Credits
+
+Many thanks to people who develop the ideas, algorithms and open-source programs used in this library:
+
+* [George Danzig](https://en.wikipedia.org/wiki/George_Dantzig) for [Simplex algorithm](https://en.wikipedia.org/wiki/Simplex_algorithm)
+* James Halliday for [Rref](https://github.com/substack/rref) library
+
 
 ## Copyright
 
