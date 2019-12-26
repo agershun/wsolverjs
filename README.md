@@ -1,4 +1,4 @@
-# wsolver - AssemblyScript linear programming solver (WIP)
+# wsolver - JavaScript linear programming solver (WIP)
 
 The solver supports the following methods:
 * brute-force
