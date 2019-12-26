@@ -1,4 +1,4 @@
-# wsolver-js - JavaScript linear programming solver (WIP)
+# wsolverjs - JavaScript linear programming solver (WIP)
 
 The solver supports the following methods:
 * brute-force
