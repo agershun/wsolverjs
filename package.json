@@ -1,0 +1,31 @@
+{
+  "name": "wsolverjs",
+  "version": "0.0.1",
+  "description": "JavaScript linear programming solver",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^6.2.2"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "main": "dist/wsolver.js",
+  "browser": "dist/wsolver.min.js",
+  "directories": {
+    "test": "test"
+  },  
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agershun/wsolverjs.git"
+  },
+  "keywords": [
+    "solver",
+    "lp"
+  ],
+  "author": "Andrey Gershun (agershun@gmail.com)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/agershun/wsolverjs/issues"
+  },
+  "homepage": "https://github.com/agershun/wsolverjs#readme"
+}
