@@ -144,7 +144,7 @@ class Matrix {
     	for(let i=0; i<A.csize;i++) {
     		let j;
     		for(j=0;j<A.rsize;j++) {
-    			if(!selected[j] && !utils.eq(A.data[j][i],0)) {
+    			if(!selected[j] && !almost(A.data[j][i],0)) {
     				break;
     			}
     		}
@@ -156,7 +156,7 @@ class Matrix {
     				A.data[j][p] /= A.data[j][i];
     			}
     			for(let k=0;k<A.rsize;k++) {
-    				if (k != j && !utils.eq(A.data[k][i],0)) {
+    				if (k != j && !almost(A.data[k][i],0)) {
     					for(let p = i+1; p<A.csize;p++) {
     						A.data[k][p] -= A.data[j][p]*A.data[k][i];
     					}
@@ -218,10 +218,9 @@ class Matrix {
 
 	// TODO rewrite
 
-	invert() {
+	inv() {
 	    if(this.csize !== this.csize){
-	    	// assert
-	    	return;
+	    	throw "The number of rows and columns should be equal for matrix inversion";
 	    }
 	    let i=0, ii=0, j=0, dim=this.csize, e=0, t=0;
 	    let I = [], C = [];
@@ -232,7 +231,7 @@ class Matrix {
 	        for(j=0; j<dim; j+=1){
 	            if(i==j){ I[i][j] = 1; }
 	            else{ I[i][j] = 0; }
-	            C[i][j] = M[i][j];
+	            C[i][j] = this.data[i][j];
 	        }
 	    }
 	    
@@ -341,6 +340,20 @@ class Matrix {
     	} else {
     		throw 'Error'
     	}
+    }
+
+    // About
+
+    almost(B) {
+    	let res = true;
+    	if(this.csize != B.csize) res = false;
+    	if(this.rsize != B.rsize) res = false;
+    	for(let i=0;i<this.rsize;i++) {
+    		for(let j=0;j<this.csize;j++) {
+    			if(!almost(this.data[i][j],B.data[i][j])) res = false;
+    		}
+    	}
+    	return res;
     }
 }	
 

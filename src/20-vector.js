@@ -42,7 +42,7 @@ class Vector {
 				}
 			}
 			return v;
-		} if(b instanceof Vector) {
+		} else if(b instanceof Vector) {
 			let res = 0;
 			for(let i=0;i<this.size;i++) {
 				res += this.data[i]*b.data[i];
@@ -55,7 +55,7 @@ class Vector {
 			}
 			return r;
 		} else {
-			throw 'wring type'
+			throw 'wrong type'
 		}
 	}	
 
@@ -67,6 +67,15 @@ class Vector {
 
 	cloneData() {
 		return this.data.slice();
+	}
+
+	almost(b) {
+    	let res = true;
+    	if(this.size != b.size) res = false;
+    	for(let i=0;i<this.size;i++) {
+    		if(!almost(this.data[i],b.data[i])) res = false;
+    	}
+    	return res;		
 	}
 }
 

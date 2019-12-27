@@ -1,7 +1,7 @@
 if (typeof exports === 'object') {
 	var assert = require('assert');
 	var wsolver = require('..');
-	var {Vector,Matrix} = require('..');
+	var {Vector,Matrix,almost,EPSILON} = require('..');
 
 }
 
@@ -95,6 +95,21 @@ describe('20.Vector', function() {
 		done();
 	});
 
+	it('20.10.1.Vector.almost(Number)', function(done) {
+		const a = Vector.init([1,2,3]);
+		const r = Vector.init([1+EPSILON/2,2+EPSILON/3,3+EPSILON/4]);
+		assert.notDeepEqual(a,r);
+		assert(a.almost(r));
+		done();
+	});
+
+	it('20.10.1.not Vector.almost(Number)', function(done) {
+		const a = Vector.init([1,2,3]);
+		const r = Vector.init([1+2*EPSILON,2+EPSILON/3,3+EPSILON/4]);
+		assert.notDeepEqual(a,r);
+		assert(!a.almost(r));
+		done();
+	});
 
 
 

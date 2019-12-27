@@ -1,7 +1,7 @@
 if (typeof exports === 'object') {
 	var assert = require('assert');
 	var wsolver = require('..');
-	var {Matrix,Vector} = require('..');
+	var {Matrix,Vector,EPSILON,almost} = require('..');
 }
 
 describe('30.Matrix', function() {
@@ -244,5 +244,62 @@ describe('30.Matrix', function() {
 		done();
 	});
 
+	it('30.14.1.Matrix.inv()', function(done) {
+		const A = Matrix.init([
+			[4,7],
+			[2,6]
+		]);
+		const R = Matrix.init([
+			[0.6,-0.7],
+			[-0.2,0.4]
+		]);
+		const R1 = A.inv();
+		assert(R.almost(R1));
+		done();
+	});
+
+	it('30.14.2.Matrix.inv()', function(done) {
+		const A = Matrix.init([
+			[3,3.5],
+			[3.2,3.6]
+		]);
+		const R = Matrix.init([
+			[-9,8.75],
+			[8,-7.5]
+		]);
+		const R1 = A.inv();
+		assert(R.almost(R1));
+		done();
+	});
+
+	it('30.15.1.Matrix.almost()', function(done) {
+		const A = Matrix.init([
+			[1,1],
+			[1,1]
+		]);
+		const B = Matrix.init([
+			[1+EPSILON/2,1],
+			[1,1]
+		]);
+		assert.notDeepEqual(A.data,B.data);
+		assert(A.almost(B));
+
+		done();
+	});
+
+	it('30.15.2.not Matrix.almost()', function(done) {
+		const A = Matrix.init([
+			[1,1],
+			[1,1]
+		]);
+		const B = Matrix.init([
+			[1+2*EPSILON,1],
+			[1,1]
+		]);
+		assert.notDeepEqual(A.data,B.data);
+		assert(!A.almost(B));
+
+		done();
+	});
 
 });

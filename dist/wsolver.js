@@ -35,6 +35,8 @@ const wsolver = function() {
 wsolver.version = '0.0.1';
 
 
+// Tolerance constant for almost()
+
 wsolver.EPSILON = 0.00000001;
 // Vector library
 
@@ -80,7 +82,7 @@ class Vector {
 				}
 			}
 			return v;
-		} if(b instanceof Vector) {
+		} else if(b instanceof Vector) {
 			let res = 0;
 			for(let i=0;i<this.size;i++) {
 				res += this.data[i]*b.data[i];
@@ -93,7 +95,7 @@ class Vector {
 			}
 			return r;
 		} else {
-			throw 'wring type'
+			throw 'wrong type'
 		}
 	}	
 
@@ -105,6 +107,15 @@ class Vector {
 
 	cloneData() {
 		return this.data.slice();
+	}
+
+	almost(b) {
+    	let res = true;
+    	if(this.size != b.size) res = false;
+    	for(let i=0;i<this.size;i++) {
+    		if(!almost(this.data[i],b.data[i])) res = false;
+    	}
+    	return res;		
 	}
 }
 
@@ -256,7 +267,7 @@ class Matrix {
     	for(let i=0; i<A.csize;i++) {
     		let j;
     		for(j=0;j<A.rsize;j++) {
-    			if(!selected[j] && !utils.eq(A.data[j][i],0)) {
+    			if(!selected[j] && !almost(A.data[j][i],0)) {
     				break;
     			}
     		}
@@ -268,7 +279,7 @@ class Matrix {
     				A.data[j][p] /= A.data[j][i];
     			}
     			for(let k=0;k<A.rsize;k++) {
-    				if (k != j && !utils.eq(A.data[k][i],0)) {
+    				if (k != j && !almost(A.data[k][i],0)) {
     					for(let p = i+1; p<A.csize;p++) {
     						A.data[k][p] -= A.data[j][p]*A.data[k][i];
     					}
@@ -330,10 +341,9 @@ class Matrix {
 
 	// TODO rewrite
 
-	invert() {
+	inv() {
 	    if(this.csize !== this.csize){
-	    	// assert
-	    	return;
+	    	throw "The number of rows and columns should be equal for matrix inversion";
 	    }
 	    let i=0, ii=0, j=0, dim=this.csize, e=0, t=0;
 	    let I = [], C = [];
@@ -344,7 +354,7 @@ class Matrix {
 	        for(j=0; j<dim; j+=1){
 	            if(i==j){ I[i][j] = 1; }
 	            else{ I[i][j] = 0; }
-	            C[i][j] = M[i][j];
+	            C[i][j] = this.data[i][j];
 	        }
 	    }
 	    
@@ -454,6 +464,20 @@ class Matrix {
     		throw 'Error'
     	}
     }
+
+    // About
+
+    almost(B) {
+    	let res = true;
+    	if(this.csize != B.csize) res = false;
+    	if(this.rsize != B.rsize) res = false;
+    	for(let i=0;i<this.rsize;i++) {
+    		for(let j=0;j<this.csize;j++) {
+    			if(!almost(this.data[i][j],B.data[i][j])) res = false;
+    		}
+    	}
+    	return res;
+    }
 }	
 
 wsolver.Matrix = Matrix;
@@ -468,8 +492,6 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	let csize = A.csize;
 	let rsize = A.rsize;
 
-console.log(10,A.rank());
-
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
 		A = A.selectRows(A.trans().rref().pivots);
 	}
@@ -480,16 +502,21 @@ console.log(10,A.rank());
 	let iteration = 0;
 
 	for(let basicIndices of utils.combinations(utils.range(A.csize),A.rsize)) {
+		iteration++;
 		let B = A.selectCols(basicIndices);
-		console.log(21,B.rank());
-		if(B.rank()!=csize) continue;
+		if(B.rank()!=rsize) continue;
 
-		let x_b = B.invert().dot(b);
+		let x_b = B.inv().dot(b);
 
-		if(x_b.some(x=>x<0)) continue;
+
+		if(x_b.data.some(x=>x<0)) continue;
+		// let obj = c.dot(x_b);
+		// console.log(30,iteration,obj);
+		// console.log(31,c,x_b);
+
 		let obj = 0;
-		for(let i=0;i<xb.length;i++) {
-			obj += c[basicIndices[i]]*xb[i];
+		for(let i=0;i<x_b.size;i++) {
+			obj += c.data[basicIndices[i]]*x_b.data[i];
 		}
 		if(obj<optVal) {
 			optVal = obj;
@@ -500,11 +527,11 @@ console.log(10,A.rank());
 
 	if(!optBasis) return -1;
 
-	let x = Vector.zeros(rsize);
+	let x = Vector.zeros(csize);
 
 	for(let i=0;i<x.size;i++) {
 		if(optBasis.includes(i)) {
-			x.data[i] = optX_b[optBasis.indexOf(i)];
+			x.data[i] = optX_b.data[optBasis.indexOf(i)];
 		}
 	}
 	return x;
@@ -557,12 +584,15 @@ class utils {
 	  	}
 	}
 
-	static eq(a,b) {
+	static almost(a,b) {
 		return Math.abs(a-b)<wsolver.EPSILON;
 	}
+
 }
 
+const almost = wsolver.almost = utils.almost;
 wsolver.utils = utils;
+
 
 return wsolver;
 

@@ -44,9 +44,11 @@ class utils {
 	  	}
 	}
 
-	static eq(a,b) {
+	static almost(a,b) {
 		return Math.abs(a-b)<wsolver.EPSILON;
 	}
+
 }
 
+const almost = wsolver.almost = utils.almost;
 wsolver.utils = utils;
