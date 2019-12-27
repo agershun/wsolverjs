@@ -1,7 +1,7 @@
 if (typeof exports === 'object') {
 	var assert = require('assert');
 	var wsolver = require('..');
-	var {Matrix} = require('..');
+	var {Matrix,Vector} = require('..');
 }
 
 describe('30.Matrix', function() {
@@ -119,7 +119,7 @@ describe('30.Matrix', function() {
 		done();
 	});
 
-	it('30.9.Matrix.rank()', function(done) {
+	it('30.9.1.Matrix.rank()', function(done) {
 		const m = Matrix.init([
 			[ 1,  2,  3,  4],
 			[ 5,  6,  7,  8],
@@ -129,6 +129,55 @@ describe('30.Matrix', function() {
 		assert.equal(r,2);
 		done();
 	});
+
+
+	it('30.9.2.Matrix.rank()', function(done) {
+		const m = Matrix.init([
+			[2,-1,3],
+			[1,0,1],
+			[0,2,-1],
+			[1,1,4],
+		]);
+		const r = m.rank();
+		assert.equal(r,3);
+		done();
+	});
+
+	it('30.9.3.Matrix.rank()', function(done) {
+		const m = Matrix.init([
+			[1,-1,1,-1],
+			[-1,1,-1,1],
+			[1,-1,1,-1],
+			[-1,1,-1,1],
+		]);
+		const r = m.rank();
+		assert.equal(r,1);
+		done();
+	});
+
+	it('30.9.4.Matrix.rank()', function(done) {
+		const A = Matrix.init([
+				[1,1,1,0,0,0],
+				[1,4,8,1,0,0],
+				[40,30,20,0,1,0],
+				[3,2,4,0,0,1]
+			]);	
+		const r = A.rank();
+		assert.equal(r,4);
+		done();
+	});
+
+	it('30.9.5.Matrix.rank()', function(done) {
+		const A = Matrix.init([
+			[10,20,10],
+			[-20,-30,10],
+			[30,50,0],
+		]);	
+		const r = A.rank();
+		assert.equal(r,2);
+		done();
+	});
+
 
 	it('30.10.Matrix.rref()', function(done) {
 		const m = Matrix.init([
@@ -146,5 +195,54 @@ describe('30.Matrix', function() {
 
 		done();
 	});
+
+	it('30.11.Matrix.dot(Vector)', function(done) {
+		const a = Vector.init([2,1,0]);
+		const B = Matrix.init([
+			[1,-1,2],
+			[0,-3,1]
+		]);
+		const r = B.dot(a);
+		assert.deepEqual(r.data,[1,-3]);
+		done();
+	});
+
+	it('30.12.Matrix.dot(Number)', function(done) {
+		const B = Matrix.init([
+			[1,-1,2],
+			[0,-3,1]
+		]);
+		let r = B.dot(2);
+		assert.deepEqual(r.data,[
+			[2,-2,4],
+			[0,-6,2]
+		]);
+		r = B.dot(-1);
+		assert.deepEqual(r.data,[
+			[-1,1,-2],
+			[0,3,-1]
+		]);
+		done();
+	});
+
+	it('30.13.Matrix.dot(Matrix)', function(done) {
+		const A = Matrix.init([
+			[0,4,-2],
+			[-4,-3,0]
+		]);
+		const B = Matrix.init([
+			[0,1],
+			[1,-1],
+			[2,3],
+		]);
+
+		const r = A.dot(B);
+		assert.deepEqual(r.data,[
+			[0,-10],
+			[-3,-1]
+		]);
+		done();
+	});
+
 
 });

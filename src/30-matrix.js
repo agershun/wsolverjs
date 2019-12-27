@@ -1,6 +1,7 @@
 // Vector library
 
 class Matrix {
+
 	constructor(rsize,csize) {
 		this.rsize = rsize;
 		this.csize = csize;
@@ -62,32 +63,45 @@ class Matrix {
 		return m;
 	}
 
-	selectRows(rows){
-		let a = new Matrix(rows.length, this.csize);
+	// SImirar to A[:,rows] in Python
+
+	selectRows(rows) {
+		let M = new Matrix(rows.length, this.csize);
 		for(let i=0;i<rows.length;i++) {
 			for(let j=0;j<this.csize;j++) {
-				a.data[i][j] = this.data[rows[i]][j];
+				M.data[i][j] = this.data[rows[i]][j];
 			}
 		}
-		return a;
+		return M;
 	}
 
-	rref() {
-		return new RrefMatrix(this);
+	selectCols(cols) {
+		let M = new Matrix(this.rsize,cols.length);
+		for(let i=0;i<this.rsize;i++) {
+			for(let j=0;j<cols.length;j++) {
+				M.data[i][j] = this.data[i][cols[j]];
+			}
+		}
+		return M;
 	}
 
+
+/*
 	// function for finding rank of matrix
 	// Based on https://www.geeksforgeeks.org/program-for-rank-of-matrix/
 	// 
-	rank() {
+	rank2() {
 		let m = this.clone();
     	let rank = m.csize; 
   
     	for (let row = 0; row < rank; row++)  { 
-	        if (m.data[row][row] != 0.0) { 
+    		if(row >= m.rsize) break;
+
+  	        if (!utils.eq(m.data[row][row],0.0)) { 
 	           for (let col = 0; col < m.rsize; col++) { 
 	               if (col != row) { 
 	                 	let mult = m.data[col][row] / m.data[row][row]; 
+	                 	// let mult = m.data[row][col] / m.data[row][row]; 
 	                 	for (let i = 0; i < rank; i++) {
 	                 		m.data[col][i] -= mult * m.data[row][i]; 
 	                 	}
@@ -96,7 +110,7 @@ class Matrix {
 	        } else {
 	            let reduce = true; 
 	            for (let i = row + 1; i < m.rsize;  i++) {
-	                if (m.data[i][row] != 0) {
+	                if (!utils.eq(m.data[i][row],0.0)) {
 	                	let tmp = m.data[i];
 	                	m.data[i] = m.data[rank];
 	                	m.data[rank] = m.data[i];
@@ -107,15 +121,52 @@ class Matrix {
 	  
 	            if (reduce) { 
 	                rank--; 
-	                for (let i = 0; i < m.rsize; i ++) {
+	                for (let i = 0; i < m.rsize; i++) {
 	                    m.data[i][row] = m.data[i][rank]; 
 	                }
 	            } 
 	            row--; 
 	        } 
+	        console.log(125,rank);
 	    } 
     	return rank; 
     }
+*/
+    // Matrix rank
+    // Source: https://cp-algorithms.com/linear_algebra/rank-matrix.html
+
+    rank() {
+    	let A = this.clone();
+    	let rank = 0;
+    	let selected = new Array(A.rsize);
+    	selected.fill(false);
+
+    	for(let i=0; i<A.csize;i++) {
+    		let j;
+    		for(j=0;j<A.rsize;j++) {
+    			if(!selected[j] && !utils.eq(A.data[j][i],0)) {
+    				break;
+    			}
+    		}
+
+    		if(j != A.rsize) {
+    			rank++;
+    			selected[j]=true;
+    			for(let p=i+1;p<A.csize;p++) {
+    				A.data[j][p] /= A.data[j][i];
+    			}
+    			for(let k=0;k<A.rsize;k++) {
+    				if (k != j && !utils.eq(A.data[k][i],0)) {
+    					for(let p = i+1; p<A.csize;p++) {
+    						A.data[k][p] -= A.data[j][p]*A.data[k][i];
+    					}
+    				}
+    			}
+    		}
+    	}
+    	return rank;
+    }
+
 
 	rref() {
 		let m = this.clone();
@@ -251,7 +302,47 @@ class Matrix {
 
 	}
 
-}
+	// Matrix multiplication
+
+	dot(d) {
+		if(d instanceof Vector) {
+		    if(this.csize != d.size){ 
+		    	throw "Matrix.dot(Vector): Matrix number of rows is not equal to vector size";
+		    }
+		    const r = Vector.zeros(this.rsize);
+	        for(var i=0; i<this.rsize; i++){
+	            for(var m=0; m<this.csize; m++){
+	                r.data[i] += this.data[i][m] * d.data[m];                      
+	            }
+	        }
+		    return r;
+    	} else if (d instanceof Matrix) {
+		    if(this.csize != d.rsize){ 
+		    	throw "Matrix.dot(Matrix): Number of rows of the first matrix is not equal to the number of columns of the second matrix";
+		    }
+
+		    const r = Matrix.zeros(this.rsize,d.csize);
+		    for(let i=0;i<this.rsize;i++) {
+		    	for(let j=0;j<this.csize;j++) {
+			    	for(let k=0;k<d.csize;k++) {
+			    		r.data[i][k] += this.data[i][j]*d.data[j][k];
+			    	}
+			    } 
+		    }
+		    return r;
+    	} else if (typeof d == 'number') {
+    		const r = this.clone();
+    		for(let i=0;i<this.rsize;i++) {
+    			for(let j=0;j<this.csize;j++) {
+    				r.data[i][j] *= d;
+    			}
+    		}
+    		return r;
+    	} else {
+    		throw 'Error'
+    	}
+    }
+}	
 
 wsolver.Matrix = Matrix;
 

@@ -32,9 +32,16 @@ class Vector {
 
 	dot(b) {
 		if(b instanceof Matrix) {
-
-			// TODO - add verification for a Matrix class
-
+			if(this.size != b.rsize) {
+				throw "not equal sizes of vector and matrix";
+			}
+			let v = Vector.zeros(b.csize);
+			for(let i=0;i<this.size;i++) {
+				for(let j=0;j<b.csize;j++) {
+					v.data[j] += this.data[i]*b.data[i][j];
+				}
+			}
+			return v;
 		} if(b instanceof Vector) {
 			let res = 0;
 			for(let i=0;i<this.size;i++) {
@@ -44,7 +51,7 @@ class Vector {
 		} else if (typeof b == 'number') {
 			let r = this.clone();
 			for(let i=0;i<this.size;i++) {
-				r *= b;
+				r.data[i] *= b;
 			}
 			return r;
 		} else {

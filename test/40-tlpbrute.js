@@ -14,11 +14,17 @@ describe('40.solveLpBrute()', function() {
 				[3,2,4,0,0,1]
 			]);		
 		const b = Vector.init([999,4500,36000,2700]);
-		const x = solveLpBrute(c,A,b);
-		console.log(x);
+		const x = Vector.init([636,330,33,2280,0,0]);
+		const y = c.dot(x);
+		assert.equal(y,73725);
+
+		const x0 = solveLpBrute(c,A,b);
+		console.log(x0);
+		// const y0 = c.dot(x0);
+		// assert.equal(y0,73725);
 		done();
 	});
-
+/*
 	it('40.2.Simple lp problem with parameters conversion', function(done) {
 		const c = Vector.init([70,80,85,0,0,0]);
 		const A = Matrix.init([
@@ -58,5 +64,21 @@ describe('40.solveLpBrute()', function() {
 		done();
 
 	});
+
+	it('40.4.Nonsolvable lp problem', function(done) {
+		const c = [3,2];
+		const A = [
+				[1,1],
+				[3,1],
+				[1,0],
+				[0,1]
+			];		
+		const b = [9,18,7,6];
+		const x0 = -1;
+		const x = solveLpBrute(c,A,b);
+		assert.deepEqual(x,x0);
+		done();
+	});
+*/
 
 });

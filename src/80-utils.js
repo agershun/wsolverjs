@@ -43,6 +43,10 @@ class utils {
 	    	yield ret();
 	  	}
 	}
+
+	static eq(a,b) {
+		return Math.abs(a-b)<wsolver.EPSILON;
+	}
 }
 
 wsolver.utils = utils;

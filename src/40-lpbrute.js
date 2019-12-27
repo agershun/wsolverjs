@@ -7,6 +7,8 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	let csize = A.csize;
 	let rsize = A.rsize;
 
+console.log(10,A.rank());
+
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
 		A = A.selectRows(A.trans().rref().pivots);
 	}
@@ -17,7 +19,8 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	let iteration = 0;
 
 	for(let basicIndices of utils.combinations(utils.range(A.csize),A.rsize)) {
-		let B = A.selectRows(basicIndices);
+		let B = A.selectCols(basicIndices);
+		console.log(21,B.rank());
 		if(B.rank()!=csize) continue;
 
 		let x_b = B.invert().dot(b);

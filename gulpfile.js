@@ -7,9 +7,9 @@ function build() {
   	src([
   	'./src/05-copyright.js',
   	'./src/10-start.js',
+    './src/11-const.js',
   	'./src/20-vector.js',
   	'./src/30-matrix.js',
-    // './src/31-rref.js',
     './src/40-lpbrute.js',
     './src/80-utils.js',
   	'./src/90-finish.js'

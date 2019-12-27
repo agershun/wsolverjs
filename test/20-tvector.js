@@ -1,7 +1,7 @@
 if (typeof exports === 'object') {
 	var assert = require('assert');
 	var wsolver = require('..');
-	var {Vector} = require('..');
+	var {Vector,Matrix} = require('..');
 
 }
 
@@ -54,6 +54,48 @@ describe('20.Vector', function() {
 		assert.notDeepEqual(a,b);
 		done();
 	});
+
+	it('20.7.Vector.dot(Matrix)', function(done) {
+		const a = Vector.init([2,1,0]);
+		const B = Matrix.init([
+			[2,1],
+			[-1,-3],
+			[1,0]
+		]);
+		let r = a.dot(B);
+		assert.deepEqual(r.data,[3,-1]);
+		done();
+	});
+
+
+	it('20.8.1.Vector.dot(Vector)', function(done) {
+		const a = Vector.init([1,2,3]);
+		const b = Vector.init([3,2,1]);
+		let r = a.dot(b);
+		assert.equal(r,10);
+		r = b.dot(a);
+		assert.equal(r,10);
+		done();
+	});
+
+
+	it('20.8.2.Vector.dot(Vector)', function(done) {
+		const c = Vector.init([70,80,85,0,0,0]);
+		const x = Vector.init([636,330,33,2280,0,0]);
+		const y = c.dot(x);
+		assert.equal(y,73725);
+		done();
+	});
+
+	it('20.9.Vector.dot(Number)', function(done) {
+		const a = Vector.init([1,2,3]);
+		const n = 3;
+		let r = a.dot(n);
+		assert.deepEqual(r.data,[3,6,9]);
+		done();
+	});
+
+
 
 
 });
