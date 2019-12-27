@@ -71,12 +71,118 @@ class Vector {
 
 	almost(b) {
     	let res = true;
-    	if(this.size != b.size) res = false;
+    	if(this.size != b.size) {
+    		throw 'Size is different';
+    	}
     	for(let i=0;i<this.size;i++) {
     		if(!almost(this.data[i],b.data[i])) res = false;
     	}
     	return res;		
 	}
+
+	add(b) {
+		if(b instanceof Vector) {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] += b.data[i];
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] += b;
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	sub(b) {
+		if(b instanceof Vector) {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] -= b.data[i];
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] -= b;
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	mul(b) {
+		if(b instanceof Vector) {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] *= b.data[i];
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] *= b;
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	div(b) {
+		if(b instanceof Vector) {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] /= b.data[i];
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] /= b;
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	copyFrom(v,start) {
+		for(let i=0;i<v.size;i++) {
+			this.data[start+i] = v.data[i];
+		}
+	}
+
+	neg() {
+		let v = new Vector(this.size);
+		for(let i=0;i<this.size;i++) {
+			v.data[i] = -this.data[i];
+		}
+		return v;
+	}
+
+	slice(start,finish) {
+		if(typeof finish == 'undefined') {
+			finish = this.size;
+		}
+		let v = new Vector(finish-start);
+		v.data = this.data.slice(start,finish);
+		return v;
+	}
+
+	diag() {
+		let m = Matrix.zeros(this.size,this.size);
+		for(let i=0;i<this.size;i++) {
+			m.data[i][i] = this.data[i];
+		}
+		return m;
+	}
+
 }
 
 wsolver.Vector = Vector;

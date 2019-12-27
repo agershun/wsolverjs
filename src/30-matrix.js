@@ -355,7 +355,93 @@ class Matrix {
     	}
     	return res;
     }
-}	
 
-wsolver.Matrix = Matrix;
+	add(b) {
+		if(b instanceof Matrix) {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] += b.data[i][j];
+				}
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] += b;
+				}
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	sub(b) {
+		if(b instanceof Matrix) {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] -= b.data[i][j];
+				}
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] -= b;
+				}
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	mul(b) {
+		if(b instanceof Matrix) {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] *= b.data[i][j];
+				}
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] *= b;
+				}
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	div(b) {
+		if(b instanceof Matrix) {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] /= b.data[i][j];
+				}
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] /= b;
+				}
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
 

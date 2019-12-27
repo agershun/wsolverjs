@@ -302,4 +302,21 @@ describe('30.Matrix', function() {
 		done();
 	});
 
+	it('30.16.Matrix.add(Matrix)', function(done) {
+		const a = Matrix.init([[1,2,3],[4,5,6]]);
+		const b = Matrix.init([[1,2,3],[3,2,1]]);
+		const r = a.add(b);
+		assert.deepEqual(r.data,[[2,4,6],[7,7,7]]);
+		done();
+	});
+
+	it('30.17.Matrix.add(Number)', function(done) {
+		const a = Matrix.init([[1,2,3],[4,5,6]]);
+		const b = 3;
+		const r = a.add(b);
+		assert.deepEqual(r.data,[[4,5,6],[7,8,9]]);
+		done();
+	});
+
+
 });

@@ -10,7 +10,10 @@ function build() {
     './src/11-const.js',
   	'./src/20-vector.js',
   	'./src/30-matrix.js',
+    './src/31-matrix2.js',
+    './src/35-leq.js',
     './src/40-lpbrute.js',
+    './src/41-lpinp.js',
     './src/80-utils.js',
   	'./src/90-finish.js'
   	])

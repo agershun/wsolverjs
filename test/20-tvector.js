@@ -103,7 +103,7 @@ describe('20.Vector', function() {
 		done();
 	});
 
-	it('20.10.1.not Vector.almost(Number)', function(done) {
+	it('20.10.2.not Vector.almost(Number)', function(done) {
 		const a = Vector.init([1,2,3]);
 		const r = Vector.init([1+2*EPSILON,2+EPSILON/3,3+EPSILON/4]);
 		assert.notDeepEqual(a,r);
@@ -111,6 +111,62 @@ describe('20.Vector', function() {
 		done();
 	});
 
+	it('20.11.Vector.add(Vector)', function(done) {
+		const a = Vector.init([1,2,3]);
+		const b = Vector.init([4,5,6]);
+		const r = a.add(b);
+		assert.deepEqual(r.data,[5,7,9]);
+		done();
+	});
 
+	it('20.12.Vector.add(Number)', function(done) {
+		const a = Vector.init([1,2,3]);
+		const b = 2;
+		const r = a.add(b);
+		assert.deepEqual(r.data,[3,4,5]);
+		done();
+	});
 
+	it('20.13.Vector.copyFrom(Vestor, item)', function(done) {
+		const a = Vector.init([1,2]);
+		const b = Vector.zeros(6);
+		b.copyFrom(a,1);
+		assert.deepEqual(b.data,[0,1,2,0,0,0]);
+		done();
+	});
+
+	it('20.14.Vector.neg()', function(done) {
+		const a = Vector.init([1,2,3]);
+		const b = a.neg();
+		assert.deepEqual(b.data,[-1,-2,-3]);
+		done();
+	});
+
+	it('20.15.1.Vector.slice(start)', function(done) {
+		const a = Vector.init([1,2,3,4,5,6]);
+		const b = a.slice(2);
+		assert.deepEqual(b.data,[3,4,5,6]);
+		done();
+	});
+
+	it('20.15.2.Vector.slice(start,finish)', function(done) {
+		const a = Vector.init([1,2,3,4,5,6]);
+		const b = a.slice(2,4);
+		assert.deepEqual(b.data,[3,4]);
+		done();
+	});
+
+it('20.16.Vector.diag()', function(done) {
+		const a = Vector.init([1,2,3]);
+		const b = a.diag();
+		assert.equal(b.rsize,3);
+		assert.equal(b.csize,3);
+		assert.deepEqual(b.data,[
+			[1,0,0],
+			[0,2,0],
+			[0,0,3],
+		]);
+		done();
+	});
 });
+

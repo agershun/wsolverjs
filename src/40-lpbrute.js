@@ -4,12 +4,12 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	A = Matrix.init(A);
 	b = Vector.init(b);
 
-	let csize = A.csize;
-	let rsize = A.rsize;
-
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
 		A = A.selectRows(A.trans().rref().pivots);
 	}
+
+	let csize = A.csize;
+	let rsize = A.rsize;
 
 	let optVal = Infinity;
 	let optBasis;

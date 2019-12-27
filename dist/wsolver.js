@@ -38,6 +38,8 @@ wsolver.version = '0.0.1';
 // Tolerance constant for almost()
 
 wsolver.EPSILON = 0.00000001;
+wsolver.MAX_ITERATIONS = 100000;
+
 // Vector library
 
 class Vector {
@@ -111,12 +113,118 @@ class Vector {
 
 	almost(b) {
     	let res = true;
-    	if(this.size != b.size) res = false;
+    	if(this.size != b.size) {
+    		throw 'Size is different';
+    	}
     	for(let i=0;i<this.size;i++) {
     		if(!almost(this.data[i],b.data[i])) res = false;
     	}
     	return res;		
 	}
+
+	add(b) {
+		if(b instanceof Vector) {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] += b.data[i];
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] += b;
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	sub(b) {
+		if(b instanceof Vector) {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] -= b.data[i];
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] -= b;
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	mul(b) {
+		if(b instanceof Vector) {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] *= b.data[i];
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] *= b;
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	div(b) {
+		if(b instanceof Vector) {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] /= b.data[i];
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.size;i++) {
+				r.data[i] /= b;
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	copyFrom(v,start) {
+		for(let i=0;i<v.size;i++) {
+			this.data[start+i] = v.data[i];
+		}
+	}
+
+	neg() {
+		let v = new Vector(this.size);
+		for(let i=0;i<this.size;i++) {
+			v.data[i] = -this.data[i];
+		}
+		return v;
+	}
+
+	slice(start,finish) {
+		if(typeof finish == 'undefined') {
+			finish = this.size;
+		}
+		let v = new Vector(finish-start);
+		v.data = this.data.slice(start,finish);
+		return v;
+	}
+
+	diag() {
+		let m = Matrix.zeros(this.size,this.size);
+		for(let i=0;i<this.size;i++) {
+			m.data[i][i] = this.data[i];
+		}
+		return m;
+	}
+
 }
 
 wsolver.Vector = Vector;
@@ -478,10 +586,198 @@ class Matrix {
     	}
     	return res;
     }
+
+	add(b) {
+		if(b instanceof Matrix) {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] += b.data[i][j];
+				}
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] += b;
+				}
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	sub(b) {
+		if(b instanceof Matrix) {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] -= b.data[i][j];
+				}
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] -= b;
+				}
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	mul(b) {
+		if(b instanceof Matrix) {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] *= b.data[i][j];
+				}
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] *= b;
+				}
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+	div(b) {
+		if(b instanceof Matrix) {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] /= b.data[i][j];
+				}
+			}
+			return r;
+		} else if(typeof b == 'number') {
+			let r = this.clone();
+			for(let i=0;i<this.rsize;i++) {
+				for(let j=0;j<this.csize;j++) {
+					r.data[i][j] /= b;
+				}
+			}
+			return r;
+		} else {
+			throw 'Wrong operand type';
+		}
+	}
+
+
+
+
+	copyFrom(m,srow, scol) {
+		for(let i=0;i<m.rsize;i++) {
+			for(let j=0;j<m.csize;j++) {
+				this.data[srow+i][scol+j] = m.data[i][j];
+			}
+		}
+	}
+
+	neg() {
+		let m = new Matrix(this.rsize,this.csize);
+		for(let i=0;i<this.rsize;i++) {
+			for(let j=0;j<this.csize;j++) {
+				m.data[i][j] = -this.data[i][j];
+			}
+		}
+		return m;
+	}
+
+	slice(rstart,cstart,rfinish,cfinish) {
+		if(typeof rfinish == 'undefined') {
+			rfinish = this.rsize;
+		}
+		if(typeof cfinish == 'undefined') {
+			cfinish = this.csize;
+		}
+		let m = new Matrix(rfinish-rstart,cfinish-cstart);
+		for(let i=0;i<rfinish-rstart;i++) {
+			m.data[i] = this.data[rstart+i].slice(cstart,cfinish);
+		}
+		return m;
+	}
+
+	static eye(size) {
+		let m = Matrix.zeros(size,size);
+		for(let i=0;i<size;i++) {
+			m.data[i][i] = 1;
+		}
+		return m;
+	}
+
+
+
 }	
 
 wsolver.Matrix = Matrix;
 
+wsolver.solveLeqGauss = function solveLeqGauss(a,b) {
+
+	// Prepare matrix for Gauss mathod
+
+	let A = new Matrix(a.rsize, a.csize+1);
+	A.copyFrom(a,0,0);
+
+	for(let i=0;i<A.rsize;i++) {
+		A.data[i][a.csize] = b.data[i];
+	}
+
+	// Solve
+
+    for (var i=0; i<A.rsize; i++) {
+        // Search for maximum in this column
+        var maxEl = Math.abs(A.data[i][i]);
+        var maxRow = i;
+        for(var k=i+1; k<A.rsize; k++) {
+            if (Math.abs(A.data[k][i]) > maxEl) {
+                maxEl = Math.abs(A.data[k][i]);
+                maxRow = k;
+            }
+        }
+
+        // Swap maximum row with current row (column by column)
+        for (var k=i; k<A.rsize+1; k++) {
+            var tmp = A.data[maxRow][k];
+            A.data[maxRow][k] = A.data[i][k];
+            A.data[i][k] = tmp;
+        }
+
+        // Make all rows below this one 0 in current column
+        for (k=i+1; k<A.rsize; k++) {
+            var c = -A.data[k][i]/A.data[i][i];
+            for(var j=i; j<A.rsize+1; j++) {
+                if (i==j) {
+                    A.data[k][j] = 0;
+                } else {
+                    A.data[k][j] += c * A.data[i][j];
+                }
+            }
+        }
+    }
+
+    // Solve equation Ax=b for an upper triangular matrix A
+    var x = new Vector(A.rsize);
+    for (var i=A.rsize-1; i>-1; i--) {
+        x.data[i] = A.data[i][A.rsize]/A.data[i][i];
+        for (var k=i-1; k>-1; k--) {
+            A.data[k][A.rsize] -= A.data[k][i] * x.data[i];
+        }
+    }
+    return x;
+}
 
 wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	// Prepare data
@@ -489,12 +785,12 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	A = Matrix.init(A);
 	b = Vector.init(b);
 
-	let csize = A.csize;
-	let rsize = A.rsize;
-
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
 		A = A.selectRows(A.trans().rref().pivots);
 	}
+
+	let csize = A.csize;
+	let rsize = A.rsize;
 
 	let optVal = Infinity;
 	let optBasis;
@@ -534,6 +830,109 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 			x.data[i] = optX_b.data[optBasis.indexOf(i)];
 		}
 	}
+	return x;
+}
+
+
+wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
+	// Prepare data
+	c = Vector.init(c);
+	A = Matrix.init(A);
+	b = Vector.init(b);
+
+	if(A.csize != c.size) {
+		throw "The first dimension of A and c must match.";
+	}
+	if(A.rsize != b.size) {
+		throw "The second dimension of A and b must match.";
+	}
+
+	if(!opt) opt = {};
+	if(!opt.MAX_ITERATIONS) opt.MAX_ITERATIONS = wsolver.MAX_ITERATIONS;
+	if(!opt.EPSILON) opt.EPSILON = wsolver.EPSILON;
+
+	if(A.rank() < Math.min(A.rsize, A.csize)) {
+		A = A.selectRows(A.trans().rref().pivots);
+	}
+
+	let rsize = A.rsize;
+	let csize = A.csize;
+
+	let x = Vector.ones(csize);
+	let l = Vector.ones(rsize);
+	let s = Vector.ones(csize);
+
+	let iteration = 0;
+
+	while(Math.abs(x.dot(s))>opt.EPSILON) {
+		iteration++;
+		if(iteration > opt.MAX_ITERATIONS) break;
+
+		let primalObj = c.dot(x);
+		let dualObj = b.dot(l);
+
+		let sigma = 0.4;
+		let mu = x.dot(s)/csize;
+
+		let A_ = Matrix.zeros(rsize+csize*2, rsize+csize*2);
+
+		// Create tableau
+		A_.copyFrom(A,0,0);
+		A_.copyFrom(A.trans(),rsize,csize);
+		A_.copyFrom(Matrix.eye(csize),rsize,csize+rsize);
+		A_.copyFrom(s.diag(),rsize+csize,0);
+		A_.copyFrom(x.diag(),rsize+csize,rsize+csize);
+
+		// for(let i=0;i<rsize;i++) {
+		// 	for(let j=0;j<csize;j++) {
+		// 		A_.data[i][j] = A.data[i][j];
+		// 	}
+		// }
+
+		// TODO - make a copy of matrix into the matrix
+		// let AT = A.trans();
+		// for(let i=0;i<csize;i++) {
+		// 	for(let j=0;j<rsize;j++) {
+		// 		A_.data[m+i][n+j] = AT.data[i][j];
+		// 	}
+		// }
+
+
+		// for(let i=0;i<csize;i++) {
+		// 	A_.data[rsize+i][rsize+csize+i] = 1.0;
+		// 	A_.data[rsize+csize+i][i] = s.data[i];
+		// 	A_.data[rsize+csize+i][rsize+csize+i] = x.data[i];
+		// }
+
+		let b_ = new Vector(rsize+2*csize);
+		b_.copyFrom(b.sub(A.dot(x)),0);
+		b_.copyFrom(c.sub(A.trans().dot(l)).sub(s),0,rsize);
+		b_.copyFrom(x.diag().dot(s.diag()).dot(Matrix.ones(csize)).add(-sigma*mu).neg(),rsize+csize);
+		
+		let delta = wsolver.solveLeqGauss(A_,b_);
+		let delta_x = delta.slice(0,csize);
+		let delta_l = delta.slice(csize,csize+rsize);
+		let delta_s = delta.slice(csize+rsize,csize+rsize+csize);
+
+		let alphaMax = 1.0;
+		for(let i=0;i<csize;i++) {
+			if(delta_x.data[i] < 0) {
+				alphaMax = Math.min(alphaMax, -x.data[i]/delta_x.data[i]);
+			}
+			if(delta_s.data[i] < 0) {
+				alphaMax = Math.min(alpha_max, -s.data[i]/delta_s.data[i]);
+			}
+		}
+
+		let eta = 0.99;
+		let alpha = Math.min(1.0, eta * alphaMax);
+
+		x = x.add(delta_x.mul(alpha));
+		s = s.add(delta_s.mul(alpha));
+		l = l.add(delta_l.mul(alpha));
+
+	}
+
 	return x;
 }
 
