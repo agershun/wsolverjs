@@ -10,6 +10,7 @@ wsolver.solveLeqGauss = function solveLeqGauss(a,b) {
 	}
 
 	// Solve
+    let unfeasible = false;
 
     for (var i=0; i<A.rsize; i++) {
         // Search for maximum in this column
@@ -31,6 +32,10 @@ wsolver.solveLeqGauss = function solveLeqGauss(a,b) {
 
         // Make all rows below this one 0 in current column
         for (k=i+1; k<A.rsize; k++) {
+            if(A.data[i][i] == 0) {
+                unfeasible = true;
+                break;
+            }
             var c = -A.data[k][i]/A.data[i][i];
             for(var j=i; j<A.rsize+1; j++) {
                 if (i==j) {
@@ -40,7 +45,10 @@ wsolver.solveLeqGauss = function solveLeqGauss(a,b) {
                 }
             }
         }
+        if(unfeasible) break;
     }
+
+    if(unfeasible) return -1;
 
     // Solve equation Ax=b for an upper triangular matrix A
     var x = new Vector(A.rsize);

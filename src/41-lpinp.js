@@ -31,9 +31,12 @@ wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
 	while(Math.abs(x.dot(s))>opt.EPSILON) {
 		iteration++;
 		if(iteration > opt.MAX_ITERATIONS) break;
+		// if(iteration > 2) break;
 
 		let primalObj = c.dot(x);
 		let dualObj = b.dot(l);
+
+		// console.log(39, iteration, x.dot(s), primalObj,dualObj)
 
 		let sigma = 0.4;
 		let mu = x.dot(s)/csize;
@@ -47,6 +50,8 @@ wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
 		A_.copyFrom(s.diag(),rsize+csize,0);
 		A_.copyFrom(x.diag(),rsize+csize,rsize+csize);
 
+
+// console.log(A_.data.map(x=>x.join(',')).join('\n'));
 		// for(let i=0;i<rsize;i++) {
 		// 	for(let j=0;j<csize;j++) {
 		// 		A_.data[i][j] = A.data[i][j];
@@ -70,10 +75,22 @@ wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
 
 		let b_ = new Vector(rsize+2*csize);
 		b_.copyFrom(b.sub(A.dot(x)),0);
-		b_.copyFrom(c.sub(A.trans().dot(l)).sub(s),0,rsize);
-		b_.copyFrom(x.diag().dot(s.diag()).dot(Matrix.ones(csize)).add(-sigma*mu).neg(),rsize+csize);
+		b_.copyFrom(c.sub(A.trans().dot(l)).sub(s),rsize);
+		b_.copyFrom(x.diag().dot(s.diag()).dot(Vector.ones(csize)).add(-sigma*mu).neg(),rsize+csize);
 		
+// console.log(79,Matrix.ones(csize,csize));
+// console.log(80,x.diag().dot(s.diag()).dot(Matrix.ones(csize,csize)).add(-sigma*mu).neg());
+// console.log(81,x.diag().dot(s.diag()).dot(Matrix.ones(csize,csize)).add(-sigma*mu).neg())
+
+// console.log(83,b_);
+
 		let delta = wsolver.solveLeqGauss(A_,b_);
+		// console.log(89,delta);
+
+		if(delta == -1) {
+			return -1; // Equation is unfeasible
+		}
+
 		let delta_x = delta.slice(0,csize);
 		let delta_l = delta.slice(csize,csize+rsize);
 		let delta_s = delta.slice(csize+rsize,csize+rsize+csize);
@@ -84,7 +101,7 @@ wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
 				alphaMax = Math.min(alphaMax, -x.data[i]/delta_x.data[i]);
 			}
 			if(delta_s.data[i] < 0) {
-				alphaMax = Math.min(alpha_max, -s.data[i]/delta_s.data[i]);
+				alphaMax = Math.min(alphaMax, -s.data[i]/delta_s.data[i]);
 			}
 		}
 

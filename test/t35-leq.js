@@ -57,4 +57,16 @@ describe('35.Linear Equations by Gauss method', function() {
 		done();
 	});
 
+	it('35.4. Non solvable 3x3', function(done) {
+		let a = Matrix.init([
+			[1,1,1],
+			[1,1,2],
+			[1,1,3]
+		]);
+		let b = Vector.init([1,3,-1]);
+		let x0 = solveLeqGauss(a,b);
+		assert.equal(x0,-1);
+		done();
+	});
+
 });
