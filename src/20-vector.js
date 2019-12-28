@@ -55,7 +55,7 @@ class Vector {
 			}
 			return r;
 		} else {
-			throw 'wrong type'
+			throw 'Vector.dot(): wrong type of second operand';
 		}
 	}	
 
@@ -181,6 +181,15 @@ class Vector {
 			m.data[i][i] = this.data[i];
 		}
 		return m;
+	}
+
+	selectVals(indices) {
+		let v = new Vector(indices.length);
+		for(let i=0;i<indices.length;i++) {
+			v.data[i] = this.data[indices[i]];
+		}
+		//v.data = indices.map(idx=>this.data[idx]);
+		return v;
 	}
 
 }

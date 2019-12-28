@@ -52,7 +52,7 @@ describe('41.solveLpIntPoint()', function() {
 		const y = c.dot(x);
 		const x0 = solveLpIntPoint(c,A,b);
 		const y0 = c.dot(x0);
-		// console.log(x0,y0,x,y);
+// console.log('intpoint',x0,y0);
 		assert(almost(y,y0));
 		//assert(x.almost(x0));
 		done();

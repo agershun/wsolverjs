@@ -1,10 +1,10 @@
 if (typeof exports === 'object') {
 	var assert = require('assert');
-	var {solveLpIntPoint,Matrix,Vector,almost} = require('..');
+	var {solveLpSimplex,Matrix,Vector,almost} = require('..');
 }
 
-describe('41.solveLpIntPoint()', function() {
-	it('41.1.Simple lp problem', function(done) {
+describe('42.solveLpSimplex()', function() {
+	it('42.1.Simple lp problem', function(done) {
 		const c = Vector.init([70,80,85,0,0,0]);
 		const A = Matrix.init([
 				[1,1,1,0,0,0],
@@ -17,15 +17,14 @@ describe('41.solveLpIntPoint()', function() {
 		const y = c.dot(x);
 		assert.equal(y,73725);
 
-		const x0 = solveLpIntPoint(c,A,b);
+		const x0 = solveLpSimplex(c,A,b);
 		const y0 = c.dot(x0);
-		// console.log(x0,y0);
 		assert(x.almost(x0));
 		assert(almost(y0,73725));
 		done();
 	});
-// if(false) {
-	it('41.2.Bigger lp problem', function(done) {
+
+	it('42.2.Bigger lp problem', function(done) {
 		const c = Vector.init([-1.,-1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]);
 		const A = Matrix.init([
 			[1.,0.,0.,0.,0.,0.,0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.],
@@ -50,15 +49,16 @@ describe('41.solveLpIntPoint()', function() {
 		     0,  0, 9,  1, 0,  0
 		]);
 		const y = c.dot(x);
-		const x0 = solveLpIntPoint(c,A,b);
+		const x0 = solveLpSimplex(c,A,b);
 		const y0 = c.dot(x0);
-		// console.log(x0,y0,x,y);
+// console.log('simplex',x0,y0);
+
 		assert(almost(y,y0));
-		//assert(x.almost(x0));
+		// assert(x.almost(x0));
 		done();
 	});
-// if(false) {
-	it('41.3.Nonsolvable lp problem', function(done) {
+
+	it('42.3.Nonsolvable lp problem', function(done) {
 		const c = [3,2];
 		const A = [
 				[1,1],
@@ -68,10 +68,9 @@ describe('41.solveLpIntPoint()', function() {
 			];		
 		const b = [9,18,7,6];
 		const x0 = -1;
-		const x = solveLpIntPoint(c,A,b);
+		const x = solveLpSimplex(c,A,b);
 		assert.deepEqual(x,x0);
 		done();
 	});
-// }
 
 });

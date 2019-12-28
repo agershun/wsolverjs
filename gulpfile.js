@@ -14,6 +14,7 @@ function build() {
     './src/35-leq.js',
     './src/40-lpbrute.js',
     './src/41-lpinp.js',
+    './src/42-lpsimplex.js',
     './src/80-utils.js',
   	'./src/90-finish.js'
   	])

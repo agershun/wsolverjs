@@ -51,6 +51,7 @@ describe('40.solveLpBrute()', function() {
 		const y = c.dot(x);
 		const x0 = solveLpBrute(c,A,b);
 		const y0 = c.dot(x0);
+// console.log('brute',x0,y0);
 		assert(almost(y,y0));
 		assert(x.almost(x0));
 		done();

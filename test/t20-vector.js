@@ -156,7 +156,7 @@ describe('20.Vector', function() {
 		done();
 	});
 
-it('20.16.Vector.diag()', function(done) {
+	it('20.16.Vector.diag()', function(done) {
 		const a = Vector.init([1,2,3]);
 		const b = a.diag();
 		assert.equal(b.rsize,3);
@@ -168,5 +168,14 @@ it('20.16.Vector.diag()', function(done) {
 		]);
 		done();
 	});
+
+	it('20.17.Vector.selectVals(indices)', function(done) {
+		const a = Vector.init([0,2,4,6,8,10,12,14,16,18,20]);
+		const b = [2,5,7];
+		const x = a.selectVals(b);
+		assert.deepEqual(x.data,[4,10,14]);
+		done();
+	});
+
 });
 

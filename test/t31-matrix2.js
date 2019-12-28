@@ -34,13 +34,15 @@ describe('31.Matrix 2', function() {
 		done();
 	});
 
-	it('32.1.Matrix.slice()', function(done) {
+	it('32.1.1.Matrix.slice(rstart,cstart)', function(done) {
 		const a = Matrix.init([
 			[1,2,3,4,5],
 			[6,7,8,9,10],
 			[11,12,13,14,15]
 		]);
 		const b = a.slice(1,2);
+		assert.equal(b.rsize,2);
+		assert.equal(b.csize,3);
 		assert.deepEqual(b.data,[
 			[8,9,10],
 			[13,14,15]
@@ -48,20 +50,22 @@ describe('31.Matrix 2', function() {
 		done();
 	});
 
-	it('32.2.Matrix.slice()', function(done) {
+	it('32.1.2.Matrix.slice(rstart,cstart,rfinish,cfinish)', function(done) {
 		const a = Matrix.init([
 			[1,2,3,4,5],
 			[6,7,8,9,10],
 			[11,12,13,14,15]
 		]);
 		const b = a.slice(1,2,2,4);
+		assert.equal(b.rsize,1);
+		assert.equal(b.csize,2);
 		assert.deepEqual(b.data,[
 			[8,9],
 		]);
 		done();
 	});
 
-	it('32.3.Matrix.eye(number)', function(done) {
+	it('32.2.Matrix.eye(number)', function(done) {
 		const a = Matrix.eye(3);
 		assert.equal(a.rsize,3);
 		assert.equal(a.csize,3);
@@ -73,5 +77,30 @@ describe('31.Matrix 2', function() {
 		done();
 	});
 
+	it('32.3.Matrix.selectCol(number)', function(done) {
+		const a = Matrix.init([
+			[1,2,3],
+			[4,5,6],
+			[7,8,9],
+			[10,11,12]
+		]);
+		const b = a.selectCol(2);
+		assert.equal(b.size,4);
+		assert.deepEqual(b.data,[3,6,9,12]);
+		done();
+	});
+
+	it('32.4.Matrix.selectRow(number)', function(done) {
+		const a = Matrix.init([
+			[1,2,3],
+			[4,5,6],
+			[7,8,9],
+			[10,11,12]
+		]);
+		const b = a.selectRow(2);
+		assert.equal(b.size,3);
+		assert.deepEqual(b.data,[7,8,9]);
+		done();
+	});
 
 });

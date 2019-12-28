@@ -39,6 +39,19 @@
 		return m;
 	}
 
+	selectRow(idx) {
+		const v = new Vector(this.csize);
+		v.data = this.data[idx];
+		return v;
+	}
+
+	selectCol(idx) {
+		const v = new Vector(this.rsize);
+		for(let i=0;i<this.rsize;i++) {
+			v.data[i] = this.data[i][idx];
+		}		
+		return v;
+	}
 
 
 }	
