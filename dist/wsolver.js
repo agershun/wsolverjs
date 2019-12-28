@@ -37,9 +37,18 @@ wsolver.version = '0.0.1';
 
 // Tolerance constant for almost()
 
-wsolver.EPSILON = 0.00000001;
-wsolver.MAX_ITERATIONS = 100000;
 
+const EPSILON = wsolver.EPSILON = 0.00000001;
+const MAX_ITERATIONS = wsolver.MAX_ITERATIONS = 100000;
+
+// TODO: Use compatible statuse
+const PROBLEM_STATUS_INIT = wsolver.PROBLEM_STATUS_INIT = 1;
+const PROBLEM_STATUS_SOLVED = wsolver.PROBLEM_STATUS_SOLVED = 2;
+const PROBLEM_STATUS_INFEASIBLE = wsolver.PROBLEM_STATUS_INFEASIBLE = 3;
+
+const LP_METHOD_BRUTE = wsolver.LP_METHOD_BRUTE = 1;
+const LP_METHOD_INTPOINT = wsolver.LP_METHOD_INTPOINT = 2;
+const LP_METHOD_SIMPLEX = wsolver.LP_METHOD_SIMPLEX = 3;
 // Vector library
 
 class Vector {
@@ -1316,6 +1325,32 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 
 }
 
+class Problem {
+	
+}
+class LpProblem extends Problem {
+	static init(c,A,b,opt) {
+		let p = new LpProblem();
+		p.c = Vector.init(c);
+		p.A = Matrix.init(A);
+		p.b = Vector.init(b);
+		p.status = wsolver.PROBLEM_STATUS_INIT;
+		p.method = LP_METHOD_INTPOINT;
+		return p;
+	}
+
+	solve() {
+		switch(this.method) {
+			case LP_METHOD_BRUTE: this.x = wsolver.solveLpBrute(this.c,this.A,this.b); break;
+			case LP_METHOD_INTPOINT: this.x = wsolver.solveLpIntPoint(this.c,this.A,this.b); break;
+			case LP_METHOD_SIMPLEX: this.x = wsolver.solveLpSimplex(this.c,this.A,this.b); break;
+		}
+		this.optVal = this.c.dot(this.x);
+		return;
+	}
+}
+
+wsolver.LpProblem = LpProblem;
 class utils {
 	//
 	// Generate array of numbers from 0 to size-1

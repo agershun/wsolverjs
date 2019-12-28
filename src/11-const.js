@@ -1,4 +1,14 @@
 // Tolerance constant for almost()
 
-wsolver.EPSILON = 0.00000001;
-wsolver.MAX_ITERATIONS = 100000;
+
+const EPSILON = wsolver.EPSILON = 0.00000001;
+const MAX_ITERATIONS = wsolver.MAX_ITERATIONS = 100000;
+
+// TODO: Use compatible statuse
+const PROBLEM_STATUS_INIT = wsolver.PROBLEM_STATUS_INIT = 1;
+const PROBLEM_STATUS_SOLVED = wsolver.PROBLEM_STATUS_SOLVED = 2;
+const PROBLEM_STATUS_INFEASIBLE = wsolver.PROBLEM_STATUS_INFEASIBLE = 3;
+
+const LP_METHOD_BRUTE = wsolver.LP_METHOD_BRUTE = 1;
+const LP_METHOD_INTPOINT = wsolver.LP_METHOD_INTPOINT = 2;
+const LP_METHOD_SIMPLEX = wsolver.LP_METHOD_SIMPLEX = 3;
