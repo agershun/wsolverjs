@@ -10,14 +10,16 @@ function build() {
     './src/11-const.js',
   	'./src/20-vector.js',
   	'./src/30-matrix.js',
-    './src/31-matrix2.js',
+    './src/301-matrix2.js',
     './src/35-leq.js',
     './src/40-lpbrute.js',
     './src/41-lpinp.js',
     './src/42-lpsimplex.js',
     './src/50-problem.js',
+    './src/505-mps.js',
     './src/51-lpproblem.js',
-    './src/55-mps.js',
+    './src/52-lpgeneral.js',
+    './src/53-lpstandard.js',
     './src/80-utils.js',
   	'./src/90-finish.js'
   	])

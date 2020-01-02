@@ -1,0 +1,7 @@
+min: +XONE +4 YTWO +9 ZTHREE;
+LIM1: +XONE +YTWO <= 5;
+LIM2: +XONE +ZTHREE >= 10;
+MYEQN: -YTWO +ZTHREE = 7;
+XONE <= 4;
+YTWO >= -1;
+YTWO <= 1;

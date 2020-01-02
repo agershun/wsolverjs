@@ -38,7 +38,7 @@ wsolver.version = '0.0.1';
 // Tolerance constant for almost()
 
 
-const EPSILON = wsolver.EPSILON = 0.00000001;
+const EPSILON = wsolver.EPSILON = 0.0000001;
 const MAX_ITERATIONS = wsolver.MAX_ITERATIONS = 100000;
 
 // TODO: Use compatible statuse
@@ -49,6 +49,22 @@ const PROBLEM_STATUS_INFEASIBLE = wsolver.PROBLEM_STATUS_INFEASIBLE = 3;
 const LP_METHOD_BRUTE = wsolver.LP_METHOD_BRUTE = 1;
 const LP_METHOD_INTPOINT = wsolver.LP_METHOD_INTPOINT = 2;
 const LP_METHOD_SIMPLEX = wsolver.LP_METHOD_SIMPLEX = 3;
+
+const DIR_MIN = wsolver.DIR_MIN = 1;
+const DIR_MAX = wsolver.DIR_MAX = 2;
+
+const STD_VAR_FR = wsolver.STD_VAR_FR = 0;
+const STD_VAR_UP = wsolver.STD_VAR_UP = 1;
+const STD_VAR_LO = wsolver.STD_VAR_LO = 2;
+const STD_VAR_LO_UP = wsolver.STD_VAR_LO_UP = 3;
+const STD_VAR_FX = wsolver.STD_VAR_FX = 4;
+
+const STD_ROW_N = wsolver.STD_ROW_N = 5;
+const STD_ROW_L = wsolver.STD_ROW_L = 6;
+const STD_ROW_G = wsolver.STD_ROW_G = 7;
+const STD_ROW_L_G = wsolver.STD_ROW_L_G = 8;
+const STD_ROW_E = wsolver.STD_ROW_E = 9;
+
 // Vector library
 
 class Vector {
@@ -106,6 +122,7 @@ class Vector {
 			}
 			return r;
 		} else {
+			console.log(58,this,b);
 			throw 'Vector.dot(): wrong type of second operand';
 		}
 	}	
@@ -121,12 +138,18 @@ class Vector {
 	}
 
 	almost(b) {
-    	let res = true;
+    	if(typeof b == 'object' && b instanceof Array) {
+    		b = Vector.init(b);
+    	}
     	if(this.size != b.size) {
     		throw 'Size is different';
     	}
+    	let res = true;
     	for(let i=0;i<this.size;i++) {
-    		if(!almost(this.data[i],b.data[i])) res = false;
+    		if(!almost(this.data[i],b.data[i])) {
+    			res = false;
+    			break;
+    		}
     	}
     	return res;		
 	}
@@ -750,6 +773,14 @@ class Matrix {
 		return v;
 	}
 
+	toString() {
+		let s = '';
+		for(let i=0;i<this.rsize;i++) {
+			s += this.data[i].join(', ')+'\n';
+		}
+		return s;
+	}
+
 
 }	
 
@@ -824,9 +855,14 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	A = Matrix.init(A);
 	b = Vector.init(b);
 
+	// console.log(7,A.rank(),A.trans().rref().pivots);
+
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
+		// console.log(10);
 		A = A.selectRows(A.trans().rref().pivots);
 	}
+
+	// console.log(13,A);
 
 	let csize = A.csize;
 	let rsize = A.rsize;
@@ -836,7 +872,12 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	let optX_b;
 	let iteration = 0;
 
+// console.log(24,A.csize, A.rsize);
+// console.log(25,utils.range(A.csize));
+// console.log(26,utils.combinations(utils.range(A.csize),A.rsize);
+
 	for(let basicIndices of utils.combinations(utils.range(A.csize),A.rsize)) {
+// console.log(25,iteration,basicIndices);
 		iteration++;
 		let B = A.selectCols(basicIndices);
 		if(B.rank()!=rsize) continue;
@@ -1275,7 +1316,7 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 			}
 		}
 
-		let d_b = B_inv.dot(A_.selectCol(chosen_j)).neg();
+		let d_b = B_inv.dot(A.selectCol(chosen_j)).neg();
 // console.log(284);
 		if(d_b.data.every(x=>x>=0)) {
 			opt_infinity = true;
@@ -1299,7 +1340,7 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 		basic_indices[l] = chosen_j;
 		basic_indices = basic_indices.sort();
 
-		B = A_.selectCols(basic_indices);
+		B = A.selectCols(basic_indices);
 
 	}	
 // console.log(311);
@@ -1327,12 +1368,574 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 
 class Problem {
 	
+// To be continued
 }
+
+wsolver.Problem = Problem;
+
+/*
+	Class to read and parse MPS files.
+*/
+
+class LpMps {
+	
+	static async read(filename) {
+		let data;
+		if (typeof exports === 'object') {
+			const fs = require('fs');
+			data = fs.readFileSync(filename, {encoding: 'utf-8'})
+		} else {
+			let response = await fetch(url);
+			if (response.ok) { 
+	  			data = await response.text();
+			} else {
+	  			throw "Problem.readMps(): Can't fetch file";
+			}
+		}
+
+		let p = new LpMps();
+		p.filename = filename;
+		p.mps = data;
+		p.rows = {};
+		p.cols = {};
+		p.goal = {};
+		p.dir = DIR_MIN;
+		p.parse();
+		// p.prepare();
+		return p;
+	}
+
+	parse() {
+		let g = this;
+		let lines = g.mps.split(/\n/g);
+		let ptr = 0;
+		let words, newSection;
+		function next() {
+			while(lines[ptr].substr(0,1) == '*' || lines[ptr].trim() == ''){
+				ptr++;
+			};
+			words = lines[ptr].trimRight().split(/\s+/g);
+			// console.log(words);
+			newSection = words[0] != '';
+			ptr++;
+		}
+		next();
+		if(words[0] == 'NAME') {
+			g.name = words[1];
+			next();
+		}
+
+		if(words[0] == 'ROWS') {
+			next();
+			while(!newSection) {
+				if(words[1] == 'N') {
+					g.goal = {name:words[2],coeffs:{}};
+				} else if(words[1] == 'L' ) {
+					g.rows[words[2]] = {name:words[2],type:'L', coeffs:{}};
+				} else if(words[1] == 'E' ) {
+					g.rows[words[2]] = {name:words[2],type:'E',coeffs:{}};
+				} else if(words[1] == 'G' ) {
+					g.rows[words[2]] = {name:words[2],type:'G',coeffs:{}};
+				} else {
+					throw 'paresMps(): Wrong row type in ROWS section at line '+ptr;
+				}
+				next();
+			}
+		}
+		if(words[0] == 'COLUMNS') {
+			next();
+			while(!newSection) {
+				let col = g.cols[words[1]];
+				if(typeof col == 'undefined') {
+					col = g.cols[words[1]]= {name:words[1]};
+				}
+
+				if(words.length == 4) {
+					if(words[2] == g.goal.name) {
+						g.goal.coeffs[words[1]] = +words[3];
+					} else {
+						g.rows[words[2]].coeffs[words[1]] = +words[3];
+					}
+				} else if(words.length == 6) {
+					if(words[2] == g.goal.name) {
+						g.goal.coeffs[words[1]] = +words[3];
+					} else {
+						g.rows[words[2]].coeffs[words[1]] = +words[3];
+					}
+
+					if(words[4] == g.goal.name) {
+						g.goal.coeffs[words[1]] = +words[5];
+					} else {
+						g.rows[words[4]].coeffs[words[1]] = +words[5];
+					}
+				} else {
+					throw "parseMps(): Wrong number of arguments in COLUMNS section at line "+ptr;
+				}
+				next();
+			}
+		}
+
+		if(words[0] == 'RHS') {
+			next();
+			while(!newSection) {
+				if(words.length == 4 || words.length == 6) {
+					g.rows[words[2]].rhs = +words[3];
+					if(words.length == 6) {
+						g.rows[words[4]].rhs = +words[5];
+					}
+				} else if(words.length == 6) {
+					throw "parseMps(): Wrong number of arguments in RHS section at line "+ptr;
+				}
+				next();
+			}
+		}
+
+		if(words[0] == 'RANGES') {
+			next();
+			while(!newSection) {
+				if(words.length == 4) {
+					g.rows[words[2]].range = +words[3];
+				} else if(words.length == 6) {
+					throw "parseMps(): Wrong number of arguments in RANGES section at line "+ptr;
+				}
+				next();
+			}
+		}
+
+
+		if(words[0] == 'BOUNDS') {
+			next();
+			while(!newSection) {
+				let v = g.cols[words[3]];
+				if(typeof v == 'undefined') {
+					v = g.vars[words[3]] = {name:words[3]};
+				}
+				if(words[1] == 'UP') {
+					v.up = +words[4];
+				} else if(words[1] == 'LO') {
+					v.lo = +words[4];
+				} else if(words[1] == 'FX') {
+					v.lo = +words[4];
+					v.hi = +words[4];
+					// v.fixed = true;
+				} else if(words[1] == 'FR') {
+					// v.free = true;
+				} else if(words[1] == 'MI') {
+					v.hi = 0;
+				} else if(words[1] == 'PL') {
+					v.lo = 0;
+				} else if(words[1] == 'UI') {
+					v.hi = +words[4];
+					v.int = true;
+				} else if(words[1] == 'LI') {
+					v.lo = +words[4];
+					v.int = true;
+				} else if(words[1] == 'BV') {
+					v.lo = 0;
+					v.lo = 1;
+					v.binary = true;
+				} else if(words[1] == 'SC') {
+					// v.lo = +words[4];
+				} else {
+					throw "parseMps(): Wrong bound type at line "+ptr;
+				}
+				next();
+			}
+		}
+		if(words[0] != 'ENDATA') {
+			throw "parseMps(): Wrong section at line "+ptr;
+		}
+	}
+
+	toGeneral() {
+		let g = new LpGeneral();
+
+		let cons = Object.keys(this.rows);
+		let vars = Object.keys(this.cols);
+		let rows = this.rows;
+		let cols = this.cols;
+		let rsize = cons.length;
+		let csize = vars.length;
+		g.c = Vector.zeros(csize);
+		g.A = Matrix.zeros(rsize,csize);
+		g.L = Array(rsize).fill(-Infinity);
+		g.U = Array(rsize).fill(Infinity);
+		g.l = Array(csize).fill(-Infinity);
+		g.u = Array(csize).fill(Infinity);
+		g.v = vars;
+		g.n = cons;
+		g.t = Array(csize).fill(undefined); // Integer (true/false)
+
+		// Set the goal variable
+		for(let j=0;j<csize;j++) {
+			let vr = this.cols[vars[j]];
+			let coeff = this.goal.coeffs[vars[j]];
+			if(typeof coeff != 'undefined') {
+				g.c.data[j] = coeff;
+			}
+			if(typeof vr.lo != 'undefined') {
+				g.l[j] = vr.lo;
+			}
+			if(typeof vr.up != 'undefined') {
+				g.u[j] = vr.up;
+			}
+			g.t[j] = (vr.binary || vr.int);
+		}
+
+		for(let i=0;i<rsize;i++) {
+			let cn = rows[cons[i]];
+			if(cn.type == 'E' ) {
+				// g.L[i] = g.U[i] = cn.rhs||0;
+				// console.log(223,cn.type);
+
+				if(typeof cn.range != 'undefined') {
+					// console.log(217,cn.range);
+					if(cn.range >= 0) {
+						g.L[i] = (cn.rhs||0);
+						g.U[i] = (cn.rhs||0) + cn.range;
+					} else {
+						g.L[i] = (cn.rhs||0) + cn.range;
+						g.U[i] = (cn.rhs||0);
+					}
+				} else {
+					// console.log(218,cn.range,cn.rhs);
+					g.L[i] = (cn.rhs||0);
+					g.U[i] = (cn.rhs||0);		
+				}
+			} else if(cn.type == 'G') {
+				g.L[i] = (cn.rhs||0) ;
+				if(typeof cn.range != 'undefined') {
+					g.U[i] = (cn.rhs||0) + Math.abs(cn.range||0);
+				} else {
+					g.U[i] = Infinity;
+				}
+			} else if(cn.type == 'L') {
+				if(typeof cn.range != 'undefined') {
+					g.L[i] = (cn.rhs||0) - Math.abs(cn.range||0);
+				} else {
+					g.L[i] = -Infinity;
+				}
+				g.U[i] = (cn.rhs||0) ;
+			} else {
+				throw 'Mps.toGeneral(): wrong contraint type';
+			}
+		// console.log(229, g.L[i],g.U[i],cn.name);			
+
+		}
+
+		// Set coefficients
+		for(let i=0;i<rsize;i++) {
+			let cn = rows[cons[i]];
+
+			for(let j=0;j<csize;j++) {
+				if(typeof cn.coeffs[vars[j]] != 'undefined') {
+					g.A.data[i][j] = cn.coeffs[vars[j]];
+				}
+			}
+		}
+
+		return g;
+	}
+
+}
+
+wsolver.LpMps = LpMps;
+
+
+
 class LpProblem extends Problem {
-	static init(c,A,b,opt) {
-		let p = new LpProblem();
+}
+
+wsolver.LpProblem = LpProblem;
+class LpGeneral {
+	toStandard() {
+		let g = this;
+		let u = g.u, l=g.l, U=g.U, L=g.L;
+		let csize = g.A.csize, rsize = g.A.rsize;
+		let s = new LpStandard();
+
+
+// console.log(g);
+		// Phase 1 - calculate number of variables, slacks and rows
+		let vn = 0, sn = 0, rn = 0; // variables, slacks, rows
+		let xv = this.xv = Array(csize);
+		let xr = Array(rsize);
+
+		for(let j=0;j<csize;j++) {
+			if(l[j] == -Infinity && u[j] == Infinity) {
+				xv[j] = {type:STD_VAR_FR, vn:vn};
+				vn+=2;
+			} else if(l[j] == -Infinity && u[j] < Infinity) {
+				xv[j] = {type:STD_VAR_UP, vn:vn};
+				vn++;
+			} else if(l[j] > -Infinity && u[j] == Infinity) {
+				xv[j] = {type:STD_VAR_LO, vn:vn};
+				vn++;
+			} else if(l[j] > -Infinity && u[j] < Infinity) {
+				if(l[j] != u[j]) {
+					xv[j] = {type:STD_VAR_LO_UP, vn:vn, sn:sn};
+					vn++;
+					rn++;
+					sn++;
+				} else {
+					xv[j] = {type:STD_VAR_FX};
+				}
+			}
+		}
+
+		for(let i=0; i<rsize; i++) {
+			if(L[i] == -Infinity && U[i] == Infinity) {
+				xr[i] = {type:STD_ROW_N};
+			} else if(L[i] == -Infinity && U[i] < Infinity) {
+				xr[i] = {type:STD_ROW_L,sn:sn};
+				rn++;
+				sn++;
+			} else if(L[i] > -Infinity && U[i] == Infinity) {
+				xr[i] = {type:STD_ROW_G,sn:sn};
+				rn++;
+				sn++;
+			} else if(L[i] > -Infinity && U[i] < Infinity) {
+				if(L[i] != U[i]) {
+// console.log(50,'STD_ROW_L_G',L[i],U[i])
+					xr[i] = {type:STD_ROW_L_G,sn:sn};
+					rn+=2;
+					sn+=2;
+				} else {
+					xr[i] = {type:STD_ROW_E};
+					rn++;
+				}
+			} else {
+				throw 'Impossible error';
+			}
+
+		}
+
+		// Phase 2
+		let A = s.A = Matrix.zeros(rn,vn+sn);
+		let b = s.b = Vector.zeros(rn);
+		let c = s.c = Vector.zeros(vn+sn);
+		let rm = 0;
+		g.slack = 0;
+
+		// Loop over variables
+		// Calculate slacks and add equalities for double-sided virables
+		for(let j=0;j<csize;j++) {
+			switch(xv[j].type) {
+				case STD_VAR_FR: 
+					c.data[xv[j].vn] = g.c.data[j];
+					c.data[xv[j].vn+1] = -g.c.data[j];
+					break;				
+				case STD_VAR_UP: 			
+					c.data[xv[j].vn] = -g.c.data[j];
+					// g.slack += u[j]*g.c.data[j];
+					// console.log(79,u[j]*g.c.data[j]);
+					break;				
+				case STD_VAR_LO: 
+					c.data[xv[j].vn] = g.c.data[j];
+					// g.slack += -l[j]*g.c.data[j];
+					// console.log(85,-l[j]*g.c.data[j]);
+					break;				
+				case STD_VAR_LO_UP: 
+					c.data[xv[j].vn] = g.c.data[j];
+					// g.slack += -l[j]*g.c.data[j];
+
+					A.data[rm][xv[j].vn] = 1;
+					A.data[rm][vn+xv[j].sn] = 1;
+					b.data[rm] = (u[j]-l[j]);
+					rm++;
+					break;
+				case STD_VAR_FX:
+					// g.slack += -l[j]*g.c.data[j];
+					// console.log(89,-l[j]*g.c.data[j]);
+					break;				
+			}
+		}
+
+//console.log(100,g.slack);
+// console.log(106,s.c.data);
+// console.log(107,A.toString());
+// console.log(108,s.b.data);
+
+		for(let i=0;i<rsize;i++) {
+			let slack = 0;
+			switch(xr[i].type) {
+				case STD_ROW_N:
+					// skip
+					break;				
+				case STD_ROW_L:
+					// Copy line
+					// console.log(93,i,xr[i]);
+					for(let j=0;j<csize;j++) {
+						switch(xv[j].type) {
+							case STD_VAR_FR: 
+								A.data[rm][xv[j].vn] = g.A.data[i][j];			
+								A.data[rm][xv[j].vn+1] = -g.A.data[i][j];			
+								break;
+							case STD_VAR_UP: 
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];
+								slack += -u[j]*g.A.data[i][j];
+								console.log(103,i,j,l[j],u[j],slack);
+								break;				
+							case STD_VAR_LO: 				
+								A.data[rm][xv[j].vn] = g.A.data[i][j];
+								slack += l[j]*g.A.data[i][j];
+								console.log(108,i,j,l[j],u[j])
+								break;				
+							case STD_VAR_LO_UP: 
+								A.data[rm][xv[j].vn] = g.A.data[i][j];
+								slack += l[j]*g.A.data[i][j];
+								console.log(117,i,j,l[j],u[j],slack)
+								break;
+							case STD_VAR_FX: 
+								slack += l[j]*g.A.data[i][j];
+								console.log(112,i,j,l[j],u[j])
+								break;
+						}
+					}
+					A.data[rm][vn+xr[i].sn] = 1;
+					b.data[rm] = U[i] + slack;
+					rm++;
+					break;				
+				case STD_ROW_G:
+					// Copy line
+					for(let j=0;j<csize;j++) {
+						switch(xv[j].type) {
+							case STD_VAR_FR: 
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];			
+								A.data[rm][xv[j].vn+1] = g.A.data[i][j];			
+								break;
+							case STD_VAR_UP: 
+								A.data[rm][xv[j].vn] = +g.A.data[i][j];
+								slack += u[j]*g.c.data[j];
+								console.log(136,i,j,l[j],u[j])
+								break;				
+							case STD_VAR_LO: 				
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];
+								slack += -l[j]*g.c.data[j];
+								console.log(141,i,j,l[j],u[j])
+								break;				
+							case STD_VAR_LO_UP: 
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];
+								slack += -l[j]*g.A.data[i][j];
+								console.log(150,i,j,l[j],u[j],xv[j]);								
+								break;
+							case STD_VAR_FX: 
+								slack += -l[j]*g.c.data[j];
+								console.log(145,i,j,l[j],u[j])
+								break;
+						}
+					}				
+					A.data[rm][vn+xr[i].sn] = 1;
+					console.log(155,L[i],U[i],slack);
+					b.data[rm] = -L[i] + slack;
+					rm++;
+					break;				
+				case STD_ROW_E:
+					for(let j=0;j<csize;j++) {
+						switch(xv[j].type) {
+							case STD_VAR_FR: 
+								A.data[rm][xv[j].vn] = g.A.data[i][j];			
+								A.data[rm][xv[j].vn+1] = -g.A.data[i][j];			
+								break;
+							case STD_VAR_UP: 
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];
+								slack += u[j]*g.A.data[i][j];
+								console.log(169,i,j,l[j],u[j]);
+								break;				
+							case STD_VAR_LO: 				
+								A.data[rm][xv[j].vn] = g.A.data[i][j];
+								slack += -l[j]*g.A.data[i][j];
+								console.log(174,i,j,l[j],u[j]);
+								break;				
+							case STD_VAR_LO_UP: 
+								A.data[rm][xv[j].vn] = g.A.data[i][j];
+								slack += -l[j]*g.A.data[i][j];
+								console.log(183,i,j,l[j],u[j],slack);
+								break;
+							case STD_VAR_FX: 
+								slack += -l[j]*g.A.data[i][j];
+								console.log(178,i,j,l[j],u[j]);
+								break;
+						}
+					}
+					b.data[rm] = U[i] + slack;
+					rm++;					
+					break;
+				case STD_ROW_L_G:
+					// Two lines
+					for(let j=0;j<csize;j++) {
+						switch(xv[j].type) {
+							case STD_VAR_FR: 
+								A.data[rm][xv[j].vn] = g.A.data[i][j];			
+								A.data[rm][xv[j].vn+1] = -g.A.data[i][j];			
+								A.data[rm+1][xv[j].vn] = -g.A.data[i][j];			
+								A.data[rm+1][xv[j].vn+1] = g.A.data[i][j];			
+								break;
+							case STD_VAR_UP: 
+								A.data[rm][xv[j].vn] = g.A.data[i][j];
+								A.data[rm+1][xv[j].vn] = -g.A.data[i][j];
+								slack += u[j]*g.c.data[j];
+								break;				
+							case STD_VAR_LO: 
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];
+								A.data[rm+1][xv[j].vn] = g.A.data[i][j];
+								slack += -l[j]*g.c.data[j];
+								break;				
+							case STD_VAR_LO_UP: 
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];
+								A.data[rm+1][xv[j].vn] = g.A.data[i][j];
+								slack += -l[j]*g.c.data[j];
+								break;
+							case STD_VAR_FX: 
+								slack += -l[j]*g.c.data[j];
+								break;
+						}
+					}
+					A.data[rm][vn+xr[i].sn] = 1;
+					A.data[rm+1][vn+xr[i].sn+1] = 1;
+					b.data[rm] = U[i] + slack;
+					b.data[rm+1] = -(L[i] + slack);
+					rm+=2;
+					break;
+			}
+		}
+
+		return s;
+
+	}
+
+	fromStandard(s) {
+		let csize = this.A.csize;
+		let xv = this.xv;
+		this.x = Vector.zeros(csize);
+		for(let j=0;j<csize;j++) {
+			let type = xv[j].type;
+			if(type==STD_VAR_FR) {
+				this.x.data[j] = s.x.data[xv[j].vn] - s.x.data[xv[j].vn+1];
+			} else if(type==STD_VAR_UP) {
+				this.x.data[j] = -s.x.data[xv[j].vn]+this.u[j];
+			} else if(type==STD_VAR_LO) {
+				this.x.data[j] = s.x.data[xv[j].vn]+this.l[j];
+			} else if(type==STD_VAR_LO_UP) {
+				this.x.data[j] = s.x.data[xv[j].vn]+this.l[j];
+			} else if(type==STD_VAR_FX) {
+				this.x.data[j] = this.l[j];
+			}
+		}
+		// console.log(270,s.x.data);
+		// console.log(271,this.c.data,this.x.data);
+		this.objVal = this.c.dot(this.x);
+		// console.log(272,this.objVal);
+	}
+
+}
+
+wsolver.LpGeneral = LpGeneral;
+class LpStandard {
+	static init(c,a,b,opt) {
+		let p = new LpStandard();
 		p.c = Vector.init(c);
-		p.A = Matrix.init(A);
+		p.A = Matrix.init(a);
 		p.b = Vector.init(b);
 		p.status = wsolver.PROBLEM_STATUS_INIT;
 		p.method = LP_METHOD_INTPOINT;
@@ -1340,17 +1943,32 @@ class LpProblem extends Problem {
 	}
 
 	solve() {
+		if(!this.method) this.method = LP_METHOD_BRUTE;
 		switch(this.method) {
-			case LP_METHOD_BRUTE: this.x = wsolver.solveLpBrute(this.c,this.A,this.b); break;
-			case LP_METHOD_INTPOINT: this.x = wsolver.solveLpIntPoint(this.c,this.A,this.b); break;
-			case LP_METHOD_SIMPLEX: this.x = wsolver.solveLpSimplex(this.c,this.A,this.b); break;
+			case LP_METHOD_BRUTE: 
+				this.x = wsolver.solveLpBrute(this.c,this.A,this.b); 
+				// console.log(17,this.x);
+				break;
+			case LP_METHOD_INTPOINT: 
+				this.x = wsolver.solveLpIntPoint(this.c,this.A,this.b); 
+				break;
+			case LP_METHOD_SIMPLEX: 
+				this.x = wsolver.solveLpSimplex(this.c,this.A,this.b); 
+				break;
 		}
-		this.optVal = this.c.dot(this.x);
-		return;
+		if(this.x == -1) {
+			this.status = wsolver.PROBLEM_STATUS_INFEASIBLE;
+			return;
+		} else {
+			this.status = wsolver.PROBLEM_STATUS_SOLVED;
+			this.optVal = this.c.dot(this.x);
+			return;
+		}
 	}
+
 }
 
-wsolver.LpProblem = LpProblem;
+wsolver.LpStandard = LpStandard;
 class utils {
 	//
 	// Generate array of numbers from 0 to size-1

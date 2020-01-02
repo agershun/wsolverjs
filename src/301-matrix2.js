@@ -53,6 +53,14 @@
 		return v;
 	}
 
+	toString() {
+		let s = '';
+		for(let i=0;i<this.rsize;i++) {
+			s += this.data[i].join(', ')+'\n';
+		}
+		return s;
+	}
+
 
 }	
 

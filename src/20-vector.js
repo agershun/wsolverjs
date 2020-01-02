@@ -55,6 +55,7 @@ class Vector {
 			}
 			return r;
 		} else {
+			console.log(58,this,b);
 			throw 'Vector.dot(): wrong type of second operand';
 		}
 	}	
@@ -70,12 +71,18 @@ class Vector {
 	}
 
 	almost(b) {
-    	let res = true;
+    	if(typeof b == 'object' && b instanceof Array) {
+    		b = Vector.init(b);
+    	}
     	if(this.size != b.size) {
     		throw 'Size is different';
     	}
+    	let res = true;
     	for(let i=0;i<this.size;i++) {
-    		if(!almost(this.data[i],b.data[i])) res = false;
+    		if(!almost(this.data[i],b.data[i])) {
+    			res = false;
+    			break;
+    		}
     	}
     	return res;		
 	}

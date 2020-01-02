@@ -4,9 +4,14 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	A = Matrix.init(A);
 	b = Vector.init(b);
 
+	// console.log(7,A.rank(),A.trans().rref().pivots);
+
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
+		// console.log(10);
 		A = A.selectRows(A.trans().rref().pivots);
 	}
+
+	// console.log(13,A);
 
 	let csize = A.csize;
 	let rsize = A.rsize;
@@ -16,7 +21,12 @@ wsolver.solveLpBrute = function solveLpBrute(c,A,b,opt) {
 	let optX_b;
 	let iteration = 0;
 
+// console.log(24,A.csize, A.rsize);
+// console.log(25,utils.range(A.csize));
+// console.log(26,utils.combinations(utils.range(A.csize),A.rsize);
+
 	for(let basicIndices of utils.combinations(utils.range(A.csize),A.rsize)) {
+// console.log(25,iteration,basicIndices);
 		iteration++;
 		let B = A.selectCols(basicIndices);
 		if(B.rank()!=rsize) continue;

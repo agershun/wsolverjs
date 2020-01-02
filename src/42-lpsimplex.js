@@ -280,7 +280,7 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 			}
 		}
 
-		let d_b = B_inv.dot(A_.selectCol(chosen_j)).neg();
+		let d_b = B_inv.dot(A.selectCol(chosen_j)).neg();
 // console.log(284);
 		if(d_b.data.every(x=>x>=0)) {
 			opt_infinity = true;
@@ -304,7 +304,7 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 		basic_indices[l] = chosen_j;
 		basic_indices = basic_indices.sort();
 
-		B = A_.selectCols(basic_indices);
+		B = A.selectCols(basic_indices);
 
 	}	
 // console.log(311);

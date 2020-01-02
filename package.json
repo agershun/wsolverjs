@@ -2,7 +2,9 @@
   "name": "wsolverjs",
   "version": "0.0.1",
   "description": "JavaScript linear programming solver",
-  "dependencies": {},
+  "dependencies": {
+    "yargs": "^15.0.2"
+  },
   "devDependencies": {
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
@@ -30,5 +32,8 @@
   "bugs": {
     "url": "https://github.com/agershun/wsolverjs/issues"
   },
-  "homepage": "https://github.com/agershun/wsolverjs#readme"
+  "homepage": "https://github.com/agershun/wsolverjs#readme",
+  "bin": {
+    "wsolver": "./bin/wsolver-cli.js"
+  }
 }
