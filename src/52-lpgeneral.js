@@ -125,26 +125,26 @@ class LpGeneral {
 							case STD_VAR_UP: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
 								slack += -u[j]*g.A.data[i][j];
-								console.log(103,i,j,l[j],u[j],slack);
+								// console.log(103,i,j,l[j],u[j],slack);
 								break;				
 							case STD_VAR_LO: 				
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
 								slack += l[j]*g.A.data[i][j];
-								console.log(108,i,j,l[j],u[j])
+								// console.log(108,i,j,l[j],u[j])
 								break;				
 							case STD_VAR_LO_UP: 
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
 								slack += l[j]*g.A.data[i][j];
-								console.log(117,i,j,l[j],u[j],slack)
+								// console.log(117,i,j,l[j],u[j],slack)
 								break;
 							case STD_VAR_FX: 
 								slack += l[j]*g.A.data[i][j];
-								console.log(112,i,j,l[j],u[j])
+								// console.log(112,i,j,l[j],u[j])
 								break;
 						}
 					}
 					A.data[rm][vn+xr[i].sn] = 1;
-					b.data[rm] = U[i] + slack;
+					b.data[rm] = U[i] - slack;
 					rm++;
 					break;				
 				case STD_ROW_G:
@@ -157,27 +157,27 @@ class LpGeneral {
 								break;
 							case STD_VAR_UP: 
 								A.data[rm][xv[j].vn] = +g.A.data[i][j];
-								slack += u[j]*g.c.data[j];
-								console.log(136,i,j,l[j],u[j])
+								slack += -u[j]*g.A.data[i][j];
+								// console.log(136,i,j,l[j],u[j])
 								break;				
 							case STD_VAR_LO: 				
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
-								slack += -l[j]*g.c.data[j];
-								console.log(141,i,j,l[j],u[j])
+								slack += l[j]*g.A.data[i][j];
+								// console.log(141,i,j,l[j],u[j])
 								break;				
 							case STD_VAR_LO_UP: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
-								slack += -l[j]*g.A.data[i][j];
-								console.log(150,i,j,l[j],u[j],xv[j]);								
+								slack += l[j]*g.A.data[i][j];
+								// console.log(150,i,j,l[j],u[j],xv[j]);								
 								break;
 							case STD_VAR_FX: 
-								slack += -l[j]*g.c.data[j];
-								console.log(145,i,j,l[j],u[j])
+								slack += l[j]*g.A.data[i][j];
+								// console.log(145,i,j,l[j],u[j])
 								break;
 						}
 					}				
 					A.data[rm][vn+xr[i].sn] = 1;
-					console.log(155,L[i],U[i],slack);
+					// console.log(155,L[i],U[i],slack);
 					b.data[rm] = -L[i] + slack;
 					rm++;
 					break;				
@@ -190,26 +190,26 @@ class LpGeneral {
 								break;
 							case STD_VAR_UP: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
-								slack += u[j]*g.A.data[i][j];
-								console.log(169,i,j,l[j],u[j]);
+								slack += -u[j]*g.A.data[i][j];
+								// console.log(169,i,j,l[j],u[j]);
 								break;				
 							case STD_VAR_LO: 				
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
-								slack += -l[j]*g.A.data[i][j];
-								console.log(174,i,j,l[j],u[j]);
+								slack += l[j]*g.A.data[i][j];
+								// console.log(174,i,j,l[j],u[j]);
 								break;				
 							case STD_VAR_LO_UP: 
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
-								slack += -l[j]*g.A.data[i][j];
-								console.log(183,i,j,l[j],u[j],slack);
+								slack += l[j]*g.A.data[i][j];
+								// console.log(183,i,j,l[j],u[j],slack);
 								break;
 							case STD_VAR_FX: 
-								slack += -l[j]*g.A.data[i][j];
-								console.log(178,i,j,l[j],u[j]);
+								slack += l[j]*g.A.data[i][j];
+								// console.log(178,i,j,l[j],u[j]);
 								break;
 						}
 					}
-					b.data[rm] = U[i] + slack;
+					b.data[rm] = U[i] - slack;
 					rm++;					
 					break;
 				case STD_ROW_L_G:
@@ -217,35 +217,35 @@ class LpGeneral {
 					for(let j=0;j<csize;j++) {
 						switch(xv[j].type) {
 							case STD_VAR_FR: 
-								A.data[rm][xv[j].vn] = g.A.data[i][j];			
-								A.data[rm][xv[j].vn+1] = -g.A.data[i][j];			
-								A.data[rm+1][xv[j].vn] = -g.A.data[i][j];			
-								A.data[rm+1][xv[j].vn+1] = g.A.data[i][j];			
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];			
+								A.data[rm][xv[j].vn+1] = g.A.data[i][j];			
+								A.data[rm+1][xv[j].vn] = g.A.data[i][j];			
+								A.data[rm+1][xv[j].vn+1] = -g.A.data[i][j];			
 								break;
 							case STD_VAR_UP: 
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
 								A.data[rm+1][xv[j].vn] = -g.A.data[i][j];
-								slack += u[j]*g.c.data[j];
+								slack += -u[j]*g.A.data[i][j];
 								break;				
 							case STD_VAR_LO: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
 								A.data[rm+1][xv[j].vn] = g.A.data[i][j];
-								slack += -l[j]*g.c.data[j];
+								slack += l[j]*g.A.data[i][j];
 								break;				
 							case STD_VAR_LO_UP: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
 								A.data[rm+1][xv[j].vn] = g.A.data[i][j];
-								slack += -l[j]*g.c.data[j];
+								slack += l[j]*g.A.data[i][j];
 								break;
 							case STD_VAR_FX: 
-								slack += -l[j]*g.c.data[j];
+								slack += l[j]*g.A.data[i][j];
 								break;
 						}
 					}
 					A.data[rm][vn+xr[i].sn] = 1;
 					A.data[rm+1][vn+xr[i].sn+1] = 1;
-					b.data[rm] = U[i] + slack;
-					b.data[rm+1] = -(L[i] + slack);
+					b.data[rm] = -L[i] + slack;
+					b.data[rm+1] = U[i] - slack;
 					rm+=2;
 					break;
 			}
@@ -256,11 +256,16 @@ class LpGeneral {
 	}
 
 	fromStandard(s) {
+		// console.log(258,this.toString());
+		// console.log(259,s.toString());
+		if(s.x == -1) return -1;
 		let csize = this.A.csize;
+		// console.log(259,'fromStandard',csize);
 		let xv = this.xv;
 		this.x = Vector.zeros(csize);
 		for(let j=0;j<csize;j++) {
 			let type = xv[j].type;
+			// console.log(165,xv[j],this.v[j],s.x);
 			if(type==STD_VAR_FR) {
 				this.x.data[j] = s.x.data[xv[j].vn] - s.x.data[xv[j].vn+1];
 			} else if(type==STD_VAR_UP) {
@@ -277,7 +282,94 @@ class LpGeneral {
 		// console.log(271,this.c.data,this.x.data);
 		this.objVal = this.c.dot(this.x);
 		// console.log(272,this.objVal);
+		let g = this;
+		g.vars = {};
+		// console.log(269,g);
+		for(let j=0;j<g.v.length;j++) {
+			g.vars[g.v[j]] = g.x.data[j];
+		}
+		g.rows = {};
+		g.rows[this.objName] = g.objVal;
+		for(let i=0;i<g.n.length;i++) {
+			g.rows[g.n[i]] = g.A.row(i).dot(g.x);
+		}		
+
 	}
+
+	solve(opt) {
+		let s = this.toStandard();
+		s.solve(opt);
+		this.fromStandard(s);
+	}
+
+	toString() {
+		let l = this.l,u = this.u, L = this.L,U = this.U, v = this.v;
+
+		let ss = 'min';
+		for(let j=0;j<this.c.size;j++) {
+			ss += ' ';
+			if(this.c.data[j] > 0) {
+				ss += '+';
+				ss += this.c.data[j];
+				ss += v[j];
+			} else if(this.c.data[j] < 0) {
+				ss += '-'+(-this.c.data[j]);
+				ss += v[j];
+			}
+		} 
+		ss += '\n';
+
+		for(let i=0;i<this.A.rsize;i++) {
+
+			ss += this.n[i]+': ';
+
+			if(L[i] > -Infinity) {
+				if(L[i]!=U[i]) {
+					ss += L[i] + ' <= ';
+				}
+			}
+
+			for(let j=0;j<this.A.csize;j++) {
+				ss += ' ';
+				if(this.A.data[i][j] > 0) {
+					if(j!=0) ss += '+';
+					ss += this.A.data[i][j];
+					ss += v[j];
+				} else if(this.A.data[i][j] < 0) {
+					ss += '-'+(-this.A.data[i][j]);
+					ss += v[j];
+				}
+			} 
+			if(U[i] < Infinity) {
+				if(L[i]!=U[i]) {
+					ss += ' <= ' + U[i];
+				} else {
+					ss += ' = ' + U[i];
+				}
+			}
+			ss += '\n';		
+		}
+
+		for(let j=0;j<this.c.size;j++) {
+			if(l[j] == u[j]) {
+				ss += v[j] +' = '+l[j];
+			} else {
+				if(l[j]>-Infinity) {
+					ss += l[j] +' <= ';
+				}
+				if(l[j]>-Infinity || u[j]<Infinity) {
+					ss += v[j];
+				}
+				if(u[j]<Infinity) {
+					ss += ' <= '+u[j];
+				}
+			}
+			ss += '\n';
+		}		
+
+		return ss;
+	}
+
 
 }
 

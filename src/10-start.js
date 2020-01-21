@@ -15,5 +15,5 @@ const wsolver = function() {
 
 };
 
-wsolver.version = '0.0.1';
+wsolver.version = '0.1.0';
 

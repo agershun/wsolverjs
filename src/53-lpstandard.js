@@ -9,8 +9,9 @@ class LpStandard {
 		return p;
 	}
 
-	solve() {
+	solve(opt) {
 		if(!this.method) this.method = LP_METHOD_BRUTE;
+		if(opt && opt.method) this.method = opt.method;
 		switch(this.method) {
 			case LP_METHOD_BRUTE: 
 				this.x = wsolver.solveLpBrute(this.c,this.A,this.b); 
@@ -31,6 +32,41 @@ class LpStandard {
 			this.optVal = this.c.dot(this.x);
 			return;
 		}
+	}
+
+	toString() {
+
+		let ss = 'min';
+		for(let j=0;j<this.c.size;j++) {
+			ss += ' ';
+			if(this.c.data[j] > 0) {
+				if(j!=0) ss += '+';
+				ss += this.c.data[j];
+				ss += 'y'+j;
+			} else if(this.c.data[j] < 0) {
+				ss += '-'+(-this.c.data[j]);
+				ss += 'y'+j;
+			}
+		} 
+		ss += '\n';
+
+		for(let i=0;i<this.A.rsize;i++) {
+			for(let j=0;j<this.A.csize;j++) {
+				ss += ' ';
+				if(this.A.data[i][j] > 0) {
+					if(j!=0) ss += '+';
+					ss += this.A.data[i][j];
+					ss += 'y'+j;
+				} else if(this.A.data[i][j] < 0) {
+					ss += '-'+(-this.A.data[i][j]);
+					ss += 'y'+j;
+				}
+			} 
+			ss += ' = '+this.b.data[i];
+			ss += '\n';		
+		}
+
+		return ss;
 	}
 
 }

@@ -135,6 +135,7 @@ class LpMps {
 				if(typeof v == 'undefined') {
 					v = g.vars[words[3]] = {name:words[3]};
 				}
+				v.bound = (v.bound||'')+words[1];
 				if(words[1] == 'UP') {
 					v.up = +words[4];
 				} else if(words[1] == 'LO') {
@@ -146,9 +147,9 @@ class LpMps {
 				} else if(words[1] == 'FR') {
 					// v.free = true;
 				} else if(words[1] == 'MI') {
-					v.hi = 0;
+					v.lo = -Infinity;
 				} else if(words[1] == 'PL') {
-					v.lo = 0;
+					v.hi = Infinity;
 				} else if(words[1] == 'UI') {
 					v.hi = +words[4];
 					v.int = true;
@@ -174,6 +175,8 @@ class LpMps {
 
 	toGeneral() {
 		let g = new LpGeneral();
+		g.name = this.name;
+		g.objName = this.goal.name;
 
 		let cons = Object.keys(this.rows);
 		let vars = Object.keys(this.cols);
@@ -198,15 +201,67 @@ class LpMps {
 			if(typeof coeff != 'undefined') {
 				g.c.data[j] = coeff;
 			}
-			if(typeof vr.lo != 'undefined') {
-				g.l[j] = vr.lo;
-			}
-			if(typeof vr.up != 'undefined') {
+
+			if(vr.bound == 'UP') {
+				g.l[j] = 0;				
 				g.u[j] = vr.up;
+			} else if(vr.bound == 'LO') {
+				g.l[j] = vr.lo;				
+				g.u[j] = Infinity;
+			} else if(vr.bound == 'LOUP' || vr.bound == 'UPLO') {				
+				g.l[j] = vr.lo;				
+				g.u[j] = vr.up;
+			} else if(vr.bound == 'FX') {
+				g.l[j] = vr.lo;				
+				g.u[j] = vr.lo;
+			} else if(vr.bound == 'FR') {
+				g.l[j] = -Infinity;				
+				g.u[j] = Infinity;
+			} else if(vr.bound == 'MI') {
+				g.l[j] = -Infinity;				
+				g.u[j] = 0;
+			} else if(vr.bound == 'PL') {
+				g.l[j] = 0;				
+				g.u[j] = Infinity;
+			} else if(vr.bound == 'UI') {
+				g.l[j] = 0;				
+				g.u[j] = vr.up;
+			} else if(vr.bound == 'LI') {
+				g.l[j] = vr.lo;				
+				g.u[j] = Infinity;
+			} else if(vr.bound == 'BV') {
+				g.l[j] = 0;				
+				g.u[j] = 1;
+			} else if(vr.bound == 'SC') {
+				g.l[j] = vr.lo;				
+				g.u[j] = vr.up;
+				// TODO Add semi-continuos type
+			} else {
+				// console.log(238,vr.bound);
+				g.l[j] = 0;				
+				g.u[j] = Infinity;				
 			}
+/*
+			if(typeof vr.lo != 'undefined') {
+				if(typeof vr.up != 'undefined') {
+					g.u[j] = vr.up;
+					g.l[j] = vr.lo;
+				} else {
+					g.u[j] = Infinity;
+					g.l[j] = vr.lo;					
+				}
+			} else {
+				if(typeof vr.up != 'undefined') {
+					g.u[j] = vr.up;
+					g.l[j] = 0;					
+				} else {
+					g.u[j] = +Infinity;
+					g.l[j] = -Infinity;					
+				}
+			}
+*/
 			g.t[j] = (vr.binary || vr.int);
 		}
-
 		for(let i=0;i<rsize;i++) {
 			let cn = rows[cons[i]];
 			if(cn.type == 'E' ) {
@@ -259,6 +314,12 @@ class LpMps {
 			}
 		}
 
+		return g;
+	}
+
+	solve(opt) {
+		let g = this.toGeneral();
+		g.solve(opt);
 		return g;
 	}
 

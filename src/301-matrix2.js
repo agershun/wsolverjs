@@ -39,13 +39,13 @@
 		return m;
 	}
 
-	selectRow(idx) {
+	row(idx) {
 		const v = new Vector(this.csize);
 		v.data = this.data[idx];
 		return v;
 	}
 
-	selectCol(idx) {
+	col(idx) {
 		const v = new Vector(this.rsize);
 		for(let i=0;i<this.rsize;i++) {
 			v.data[i] = this.data[i][idx];

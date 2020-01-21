@@ -1,5 +1,6 @@
 /*
 
+   Whatify Solver
    Copyright (c) Andrey Gershun (agershun@gmail.com), 2019
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +33,7 @@ const wsolver = function() {
 
 };
 
-wsolver.version = '0.0.1';
+wsolver.version = '0.1.0';
 
 
 // Tolerance constant for almost()
@@ -578,6 +579,9 @@ class Matrix {
 	dot(d) {
 		if(d instanceof Vector) {
 		    if(this.csize != d.size){ 
+		    	console.log(209,this);
+		    	console.log(210,d);
+		    	console.trace('309,stack');;
 		    	throw "Matrix.dot(Vector): Matrix number of rows is not equal to vector size";
 		    }
 		    const r = Vector.zeros(this.rsize);
@@ -759,13 +763,13 @@ class Matrix {
 		return m;
 	}
 
-	selectRow(idx) {
+	row(idx) {
 		const v = new Vector(this.csize);
 		v.data = this.data[idx];
 		return v;
 	}
 
-	selectCol(idx) {
+	col(idx) {
 		const v = new Vector(this.rsize);
 		for(let i=0;i<this.rsize;i++) {
 			v.data[i] = this.data[i][idx];
@@ -931,9 +935,17 @@ wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
 	if(!opt.MAX_ITERATIONS) opt.MAX_ITERATIONS = wsolver.MAX_ITERATIONS;
 	if(!opt.EPSILON) opt.EPSILON = wsolver.EPSILON;
 
+console.log(18,A.rsize,A.csize);
+console.log(19,b.size);
+
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
-		A = A.selectRows(A.trans().rref().pivots);
+		let pivots = A.trans().rref().pivots;
+		A = A.selectRows(pivots);
+		b = b.selectVals(pivots);
 	}
+
+console.log(24,A.rsize,A.csize);
+console.log(24,b.size);
 
 	let rsize = A.rsize;
 	let csize = A.csize;
@@ -988,6 +1000,12 @@ wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
 		// 	A_.data[rsize+csize+i][i] = s.data[i];
 		// 	A_.data[rsize+csize+i][rsize+csize+i] = x.data[i];
 		// }
+
+console.log(84,A.rsize,A.csize);
+console.log(85,b.size);
+console.log(86,x.size);
+console.log(87,A.dot(x));
+
 
 		let b_ = new Vector(rsize+2*csize);
 		b_.copyFrom(b.sub(A.dot(x)),0);
@@ -1052,7 +1070,9 @@ wsolver.solveLpSimplex = function solveLpSimplex(c,A,b,opt) {
 	if(!opt.epsilon) opt.epsilon = wsolver.EPSILON;
 
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
-		A = A.selectRows(A.trans().rref().pivots);
+		let pivots = A.trans().rref().pivots;
+		A = A.selectRows(pivots);
+		b = b.selectVals(pivots);
 	}
 
 	let basic_indices = lpSimplexFirstPhase(A,b,opt);
@@ -1089,14 +1109,19 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 	let indices = [ ...Array(csize+rsize).keys() ];
 	let basic_indices = indices.slice(csize,csize+rsize);
 	let B = A_.selectCols(basic_indices);
-
+console.log(64,B.rsize,B.csize);
+console.log(64,A_.rsize,A_.csize);
+console.log(58,basic_indices);
+console.log(59,rsize,csize);
+console.log(60,A1.rsize,A1.csize,b1.size);
 	let optimal = false;
 	let opt_infinity = false;
 	let iteration = 0;
 	let obj_val = Infinity;
 
 	while (!optimal) {
-		// console.log('iter', iteration, 'obj_val',obj_val);
+		console.log(63,'iter', iteration, 'obj_val',obj_val);
+
 		iteration++;
 
 		let B_inv = B.inv();
@@ -1118,7 +1143,7 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 		let reduced_costs = {};
 		for(let j=0;j<indices.length;j++) {
 			if(!basic_indices.includes(j)) {
-				reduced_costs[j] = c.data[j] - c_b.dot(B_inv.dot(A_.selectCol(j)))
+				reduced_costs[j] = c.data[j] - c_b.dot(B_inv.dot(A_.col(j)))
 			}
 		}
 
@@ -1135,7 +1160,7 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 			}
 		}
 
-		let d_b = B_inv.dot(A_.selectCol(chosen_j)).neg();
+		let d_b = B_inv.dot(A_.col(chosen_j)).neg();
 
 		if(d_b.data.every(x=>x>=0)) {
 			opt_infinity = true;
@@ -1172,8 +1197,8 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 
 	for(let x of basic_indices) {
 		if(x >= csize) {
-			console.log(988,x,N);
-			exit();
+			// console.log(988,x,N);
+			// exit();
 			contains_artifical = true;
 			break;
 		}
@@ -1214,11 +1239,14 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 			continue;
 		}
 
-		let B_small = Array(A.length);
-		for(let i = 0; i<A.length;i++) {
-			B_small[i] = Array(basic_indices_no_artificial.length);
+		console.log('NOT TESTED FROM HERE!!!');
+		exit(1);
+
+		let B_small = Array(A1.rsize);
+		for(let i = 0; i<A1.rsize;i++) {
+			B_small.data[i] = Array(basic_indices_no_artificial.length);
 			for(let j=0;j<basic_indices_no_artificial.length;j++) {
-				B_small[i][j] = A[i][basic_indices_no_artificial[j]];
+				B_small[i][j] = A.data[i][basic_indices_no_artificial[j]];
 			}
 		}
 
@@ -1277,7 +1305,6 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 	let obj_val = Infinity;
 
 	while (!optimal) {
-		// console.log('iter', iteration, 'obj_val',obj_val);
 		iteration++;
 
 		let B_inv = B.inv();
@@ -1298,7 +1325,7 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 		let reduced_costs = {};
 		for(let j=0;j<csize;j++) {
 			if(!basic_indices.includes(j)) {
-				reduced_costs[j] = c.data[j] - c_b.dot(B_inv.dot(A.selectCol(j)))
+				reduced_costs[j] = c.data[j] - c_b.dot(B_inv.dot(A.col(j)))
 			}
 		}
 
@@ -1316,7 +1343,9 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 			}
 		}
 
-		let d_b = B_inv.dot(A.selectCol(chosen_j)).neg();
+// console.log(283,typeof chosen_j,'>'+chosen_j+'<');
+
+		let d_b = B_inv.dot(A.col(chosen_j)).neg();
 // console.log(284);
 		if(d_b.data.every(x=>x>=0)) {
 			opt_infinity = true;
@@ -1510,6 +1539,7 @@ class LpMps {
 				if(typeof v == 'undefined') {
 					v = g.vars[words[3]] = {name:words[3]};
 				}
+				v.bound = (v.bound||'')+words[1];
 				if(words[1] == 'UP') {
 					v.up = +words[4];
 				} else if(words[1] == 'LO') {
@@ -1521,9 +1551,9 @@ class LpMps {
 				} else if(words[1] == 'FR') {
 					// v.free = true;
 				} else if(words[1] == 'MI') {
-					v.hi = 0;
+					v.lo = -Infinity;
 				} else if(words[1] == 'PL') {
-					v.lo = 0;
+					v.hi = Infinity;
 				} else if(words[1] == 'UI') {
 					v.hi = +words[4];
 					v.int = true;
@@ -1549,6 +1579,8 @@ class LpMps {
 
 	toGeneral() {
 		let g = new LpGeneral();
+		g.name = this.name;
+		g.objName = this.goal.name;
 
 		let cons = Object.keys(this.rows);
 		let vars = Object.keys(this.cols);
@@ -1573,15 +1605,67 @@ class LpMps {
 			if(typeof coeff != 'undefined') {
 				g.c.data[j] = coeff;
 			}
-			if(typeof vr.lo != 'undefined') {
-				g.l[j] = vr.lo;
-			}
-			if(typeof vr.up != 'undefined') {
+
+			if(vr.bound == 'UP') {
+				g.l[j] = 0;				
 				g.u[j] = vr.up;
+			} else if(vr.bound == 'LO') {
+				g.l[j] = vr.lo;				
+				g.u[j] = Infinity;
+			} else if(vr.bound == 'LOUP' || vr.bound == 'UPLO') {				
+				g.l[j] = vr.lo;				
+				g.u[j] = vr.up;
+			} else if(vr.bound == 'FX') {
+				g.l[j] = vr.lo;				
+				g.u[j] = vr.lo;
+			} else if(vr.bound == 'FR') {
+				g.l[j] = -Infinity;				
+				g.u[j] = Infinity;
+			} else if(vr.bound == 'MI') {
+				g.l[j] = -Infinity;				
+				g.u[j] = 0;
+			} else if(vr.bound == 'PL') {
+				g.l[j] = 0;				
+				g.u[j] = Infinity;
+			} else if(vr.bound == 'UI') {
+				g.l[j] = 0;				
+				g.u[j] = vr.up;
+			} else if(vr.bound == 'LI') {
+				g.l[j] = vr.lo;				
+				g.u[j] = Infinity;
+			} else if(vr.bound == 'BV') {
+				g.l[j] = 0;				
+				g.u[j] = 1;
+			} else if(vr.bound == 'SC') {
+				g.l[j] = vr.lo;				
+				g.u[j] = vr.up;
+				// TODO Add semi-continuos type
+			} else {
+				// console.log(238,vr.bound);
+				g.l[j] = 0;				
+				g.u[j] = Infinity;				
 			}
+/*
+			if(typeof vr.lo != 'undefined') {
+				if(typeof vr.up != 'undefined') {
+					g.u[j] = vr.up;
+					g.l[j] = vr.lo;
+				} else {
+					g.u[j] = Infinity;
+					g.l[j] = vr.lo;					
+				}
+			} else {
+				if(typeof vr.up != 'undefined') {
+					g.u[j] = vr.up;
+					g.l[j] = 0;					
+				} else {
+					g.u[j] = +Infinity;
+					g.l[j] = -Infinity;					
+				}
+			}
+*/
 			g.t[j] = (vr.binary || vr.int);
 		}
-
 		for(let i=0;i<rsize;i++) {
 			let cn = rows[cons[i]];
 			if(cn.type == 'E' ) {
@@ -1634,6 +1718,12 @@ class LpMps {
 			}
 		}
 
+		return g;
+	}
+
+	solve(opt) {
+		let g = this.toGeneral();
+		g.solve(opt);
 		return g;
 	}
 
@@ -1774,26 +1864,26 @@ class LpGeneral {
 							case STD_VAR_UP: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
 								slack += -u[j]*g.A.data[i][j];
-								console.log(103,i,j,l[j],u[j],slack);
+								// console.log(103,i,j,l[j],u[j],slack);
 								break;				
 							case STD_VAR_LO: 				
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
 								slack += l[j]*g.A.data[i][j];
-								console.log(108,i,j,l[j],u[j])
+								// console.log(108,i,j,l[j],u[j])
 								break;				
 							case STD_VAR_LO_UP: 
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
 								slack += l[j]*g.A.data[i][j];
-								console.log(117,i,j,l[j],u[j],slack)
+								// console.log(117,i,j,l[j],u[j],slack)
 								break;
 							case STD_VAR_FX: 
 								slack += l[j]*g.A.data[i][j];
-								console.log(112,i,j,l[j],u[j])
+								// console.log(112,i,j,l[j],u[j])
 								break;
 						}
 					}
 					A.data[rm][vn+xr[i].sn] = 1;
-					b.data[rm] = U[i] + slack;
+					b.data[rm] = U[i] - slack;
 					rm++;
 					break;				
 				case STD_ROW_G:
@@ -1806,27 +1896,27 @@ class LpGeneral {
 								break;
 							case STD_VAR_UP: 
 								A.data[rm][xv[j].vn] = +g.A.data[i][j];
-								slack += u[j]*g.c.data[j];
-								console.log(136,i,j,l[j],u[j])
+								slack += -u[j]*g.A.data[i][j];
+								// console.log(136,i,j,l[j],u[j])
 								break;				
 							case STD_VAR_LO: 				
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
-								slack += -l[j]*g.c.data[j];
-								console.log(141,i,j,l[j],u[j])
+								slack += l[j]*g.A.data[i][j];
+								// console.log(141,i,j,l[j],u[j])
 								break;				
 							case STD_VAR_LO_UP: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
-								slack += -l[j]*g.A.data[i][j];
-								console.log(150,i,j,l[j],u[j],xv[j]);								
+								slack += l[j]*g.A.data[i][j];
+								// console.log(150,i,j,l[j],u[j],xv[j]);								
 								break;
 							case STD_VAR_FX: 
-								slack += -l[j]*g.c.data[j];
-								console.log(145,i,j,l[j],u[j])
+								slack += l[j]*g.A.data[i][j];
+								// console.log(145,i,j,l[j],u[j])
 								break;
 						}
 					}				
 					A.data[rm][vn+xr[i].sn] = 1;
-					console.log(155,L[i],U[i],slack);
+					// console.log(155,L[i],U[i],slack);
 					b.data[rm] = -L[i] + slack;
 					rm++;
 					break;				
@@ -1839,26 +1929,26 @@ class LpGeneral {
 								break;
 							case STD_VAR_UP: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
-								slack += u[j]*g.A.data[i][j];
-								console.log(169,i,j,l[j],u[j]);
+								slack += -u[j]*g.A.data[i][j];
+								// console.log(169,i,j,l[j],u[j]);
 								break;				
 							case STD_VAR_LO: 				
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
-								slack += -l[j]*g.A.data[i][j];
-								console.log(174,i,j,l[j],u[j]);
+								slack += l[j]*g.A.data[i][j];
+								// console.log(174,i,j,l[j],u[j]);
 								break;				
 							case STD_VAR_LO_UP: 
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
-								slack += -l[j]*g.A.data[i][j];
-								console.log(183,i,j,l[j],u[j],slack);
+								slack += l[j]*g.A.data[i][j];
+								// console.log(183,i,j,l[j],u[j],slack);
 								break;
 							case STD_VAR_FX: 
-								slack += -l[j]*g.A.data[i][j];
-								console.log(178,i,j,l[j],u[j]);
+								slack += l[j]*g.A.data[i][j];
+								// console.log(178,i,j,l[j],u[j]);
 								break;
 						}
 					}
-					b.data[rm] = U[i] + slack;
+					b.data[rm] = U[i] - slack;
 					rm++;					
 					break;
 				case STD_ROW_L_G:
@@ -1866,35 +1956,35 @@ class LpGeneral {
 					for(let j=0;j<csize;j++) {
 						switch(xv[j].type) {
 							case STD_VAR_FR: 
-								A.data[rm][xv[j].vn] = g.A.data[i][j];			
-								A.data[rm][xv[j].vn+1] = -g.A.data[i][j];			
-								A.data[rm+1][xv[j].vn] = -g.A.data[i][j];			
-								A.data[rm+1][xv[j].vn+1] = g.A.data[i][j];			
+								A.data[rm][xv[j].vn] = -g.A.data[i][j];			
+								A.data[rm][xv[j].vn+1] = g.A.data[i][j];			
+								A.data[rm+1][xv[j].vn] = g.A.data[i][j];			
+								A.data[rm+1][xv[j].vn+1] = -g.A.data[i][j];			
 								break;
 							case STD_VAR_UP: 
 								A.data[rm][xv[j].vn] = g.A.data[i][j];
 								A.data[rm+1][xv[j].vn] = -g.A.data[i][j];
-								slack += u[j]*g.c.data[j];
+								slack += -u[j]*g.A.data[i][j];
 								break;				
 							case STD_VAR_LO: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
 								A.data[rm+1][xv[j].vn] = g.A.data[i][j];
-								slack += -l[j]*g.c.data[j];
+								slack += l[j]*g.A.data[i][j];
 								break;				
 							case STD_VAR_LO_UP: 
 								A.data[rm][xv[j].vn] = -g.A.data[i][j];
 								A.data[rm+1][xv[j].vn] = g.A.data[i][j];
-								slack += -l[j]*g.c.data[j];
+								slack += l[j]*g.A.data[i][j];
 								break;
 							case STD_VAR_FX: 
-								slack += -l[j]*g.c.data[j];
+								slack += l[j]*g.A.data[i][j];
 								break;
 						}
 					}
 					A.data[rm][vn+xr[i].sn] = 1;
 					A.data[rm+1][vn+xr[i].sn+1] = 1;
-					b.data[rm] = U[i] + slack;
-					b.data[rm+1] = -(L[i] + slack);
+					b.data[rm] = -L[i] + slack;
+					b.data[rm+1] = U[i] - slack;
 					rm+=2;
 					break;
 			}
@@ -1905,11 +1995,16 @@ class LpGeneral {
 	}
 
 	fromStandard(s) {
+		// console.log(258,this.toString());
+		// console.log(259,s.toString());
+		if(s.x == -1) return -1;
 		let csize = this.A.csize;
+		// console.log(259,'fromStandard',csize);
 		let xv = this.xv;
 		this.x = Vector.zeros(csize);
 		for(let j=0;j<csize;j++) {
 			let type = xv[j].type;
+			// console.log(165,xv[j],this.v[j],s.x);
 			if(type==STD_VAR_FR) {
 				this.x.data[j] = s.x.data[xv[j].vn] - s.x.data[xv[j].vn+1];
 			} else if(type==STD_VAR_UP) {
@@ -1926,7 +2021,94 @@ class LpGeneral {
 		// console.log(271,this.c.data,this.x.data);
 		this.objVal = this.c.dot(this.x);
 		// console.log(272,this.objVal);
+		let g = this;
+		g.vars = {};
+		// console.log(269,g);
+		for(let j=0;j<g.v.length;j++) {
+			g.vars[g.v[j]] = g.x.data[j];
+		}
+		g.rows = {};
+		g.rows[this.objName] = g.objVal;
+		for(let i=0;i<g.n.length;i++) {
+			g.rows[g.n[i]] = g.A.row(i).dot(g.x);
+		}		
+
 	}
+
+	solve(opt) {
+		let s = this.toStandard();
+		s.solve(opt);
+		this.fromStandard(s);
+	}
+
+	toString() {
+		let l = this.l,u = this.u, L = this.L,U = this.U, v = this.v;
+
+		let ss = 'min';
+		for(let j=0;j<this.c.size;j++) {
+			ss += ' ';
+			if(this.c.data[j] > 0) {
+				ss += '+';
+				ss += this.c.data[j];
+				ss += v[j];
+			} else if(this.c.data[j] < 0) {
+				ss += '-'+(-this.c.data[j]);
+				ss += v[j];
+			}
+		} 
+		ss += '\n';
+
+		for(let i=0;i<this.A.rsize;i++) {
+
+			ss += this.n[i]+': ';
+
+			if(L[i] > -Infinity) {
+				if(L[i]!=U[i]) {
+					ss += L[i] + ' <= ';
+				}
+			}
+
+			for(let j=0;j<this.A.csize;j++) {
+				ss += ' ';
+				if(this.A.data[i][j] > 0) {
+					if(j!=0) ss += '+';
+					ss += this.A.data[i][j];
+					ss += v[j];
+				} else if(this.A.data[i][j] < 0) {
+					ss += '-'+(-this.A.data[i][j]);
+					ss += v[j];
+				}
+			} 
+			if(U[i] < Infinity) {
+				if(L[i]!=U[i]) {
+					ss += ' <= ' + U[i];
+				} else {
+					ss += ' = ' + U[i];
+				}
+			}
+			ss += '\n';		
+		}
+
+		for(let j=0;j<this.c.size;j++) {
+			if(l[j] == u[j]) {
+				ss += v[j] +' = '+l[j];
+			} else {
+				if(l[j]>-Infinity) {
+					ss += l[j] +' <= ';
+				}
+				if(l[j]>-Infinity || u[j]<Infinity) {
+					ss += v[j];
+				}
+				if(u[j]<Infinity) {
+					ss += ' <= '+u[j];
+				}
+			}
+			ss += '\n';
+		}		
+
+		return ss;
+	}
+
 
 }
 
@@ -1942,8 +2124,9 @@ class LpStandard {
 		return p;
 	}
 
-	solve() {
+	solve(opt) {
 		if(!this.method) this.method = LP_METHOD_BRUTE;
+		if(opt && opt.method) this.method = opt.method;
 		switch(this.method) {
 			case LP_METHOD_BRUTE: 
 				this.x = wsolver.solveLpBrute(this.c,this.A,this.b); 
@@ -1964,6 +2147,41 @@ class LpStandard {
 			this.optVal = this.c.dot(this.x);
 			return;
 		}
+	}
+
+	toString() {
+
+		let ss = 'min';
+		for(let j=0;j<this.c.size;j++) {
+			ss += ' ';
+			if(this.c.data[j] > 0) {
+				if(j!=0) ss += '+';
+				ss += this.c.data[j];
+				ss += 'y'+j;
+			} else if(this.c.data[j] < 0) {
+				ss += '-'+(-this.c.data[j]);
+				ss += 'y'+j;
+			}
+		} 
+		ss += '\n';
+
+		for(let i=0;i<this.A.rsize;i++) {
+			for(let j=0;j<this.A.csize;j++) {
+				ss += ' ';
+				if(this.A.data[i][j] > 0) {
+					if(j!=0) ss += '+';
+					ss += this.A.data[i][j];
+					ss += 'y'+j;
+				} else if(this.A.data[i][j] < 0) {
+					ss += '-'+(-this.A.data[i][j]);
+					ss += 'y'+j;
+				}
+			} 
+			ss += ' = '+this.b.data[i];
+			ss += '\n';		
+		}
+
+		return ss;
 	}
 
 }

@@ -15,9 +15,17 @@ wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
 	if(!opt.MAX_ITERATIONS) opt.MAX_ITERATIONS = wsolver.MAX_ITERATIONS;
 	if(!opt.EPSILON) opt.EPSILON = wsolver.EPSILON;
 
+console.log(18,A.rsize,A.csize);
+console.log(19,b.size);
+
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
-		A = A.selectRows(A.trans().rref().pivots);
+		let pivots = A.trans().rref().pivots;
+		A = A.selectRows(pivots);
+		b = b.selectVals(pivots);
 	}
+
+console.log(24,A.rsize,A.csize);
+console.log(24,b.size);
 
 	let rsize = A.rsize;
 	let csize = A.csize;
@@ -72,6 +80,12 @@ wsolver.solveLpIntPoint = function solveLpIntPoint(c,A,b,opt) {
 		// 	A_.data[rsize+csize+i][i] = s.data[i];
 		// 	A_.data[rsize+csize+i][rsize+csize+i] = x.data[i];
 		// }
+
+console.log(84,A.rsize,A.csize);
+console.log(85,b.size);
+console.log(86,x.size);
+console.log(87,A.dot(x));
+
 
 		let b_ = new Vector(rsize+2*csize);
 		b_.copyFrom(b.sub(A.dot(x)),0);

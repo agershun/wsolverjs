@@ -1,40 +1,46 @@
 #!/usr/bin/env node
 //
 // Command line interface for wsolver
-// Version: 0.0.1
+// Version: 0.0.2
 // Date: 29.12.2019
-// (c) 2019, Andrey Gershun
+// (c) 2019-2020, Andrey Gershun
 //
 
-let wsolver = require('wsolver');
+let wsolver = require('..');
 let path = require('path');
 let fs = require('fs');
 let stdin = process.openStdin();
 let yargs = require('yargs')
 	.strict()
-	.usage('wsolver - linear programming solver (version ' + wsolver.version + ')\n\nUsage: $0 [params]')
-
-	.example('$0 -mps exampls.mps -solve', 'Read the .MPS file and solve it')
-	.example('')
-	.example('$0 -lp exampls.mps -solve', 'Read the .MPS file and solve it')
-	.example('')
+	.usage('wsolver - linear programming solver (version ' + wsolver.version + ')\n\nUsage: wsolver [params]')
 
 .version('v', 'Echo wsolver version', wsolver.version)
 	.alias('v', 'version')
+
+.help('h','Show help message')
+	.alias('h', 'help')
 
 // .boolean('m')
 // 	.describe('m', 'Minify json output')
 // 	.alias('m', 'minify')
 
-.describe('mps', 'Read the problem from the .MPS file')
-	.alias('mps', 'mps')
-	.nargs('mps', 1)
-	.normalize('mps')
+.describe('m', 'Read the problem from the .MPS file')
+	.alias('m', 'mps')
+	.nargs('m', 1)
+	.normalize('m')
 
-.help('h')
-	.alias('h', 'help')
+.describe('s', 'Solve the problem')
+	.alias('s', 'solve')
+	.nargs('s', 0)
+	.normalize('s')
 
-.epilog('\nMore information about the library: github.com/agershun/whatifyjs')
+.example('wsolver -mps example.mps -solve', 'Read the .MPS file and solve it')
+.example('wsolver -m example.mps -s', 'Read the .MPS file and solve it')
+// .example('')
+// .example('$0 -mod example.mod -dat example.dat -solve', 'Read the GMPL file and solve it')
+// .example('')
+
+.epilog('\nMore information about the library: github.com/agershun/wsolver')
 
 let argv = yargs.argv;
 let sql = '';
@@ -61,6 +67,8 @@ if (argv.mps) {
 	}
 
 	mps = fs.readFileSync(argv.f, 'utf8').toString();
+
+	wsolver.readMps();
 
 	//TODO - execute
 	// execute(sql, argv._);

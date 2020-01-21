@@ -16,7 +16,9 @@ wsolver.solveLpSimplex = function solveLpSimplex(c,A,b,opt) {
 	if(!opt.epsilon) opt.epsilon = wsolver.EPSILON;
 
 	if(A.rank() < Math.min(A.rsize, A.csize)) {
-		A = A.selectRows(A.trans().rref().pivots);
+		let pivots = A.trans().rref().pivots;
+		A = A.selectRows(pivots);
+		b = b.selectVals(pivots);
 	}
 
 	let basic_indices = lpSimplexFirstPhase(A,b,opt);
@@ -53,14 +55,19 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 	let indices = [ ...Array(csize+rsize).keys() ];
 	let basic_indices = indices.slice(csize,csize+rsize);
 	let B = A_.selectCols(basic_indices);
-
+console.log(64,B.rsize,B.csize);
+console.log(64,A_.rsize,A_.csize);
+console.log(58,basic_indices);
+console.log(59,rsize,csize);
+console.log(60,A1.rsize,A1.csize,b1.size);
 	let optimal = false;
 	let opt_infinity = false;
 	let iteration = 0;
 	let obj_val = Infinity;
 
 	while (!optimal) {
-		// console.log('iter', iteration, 'obj_val',obj_val);
+		console.log(63,'iter', iteration, 'obj_val',obj_val);
+
 		iteration++;
 
 		let B_inv = B.inv();
@@ -82,7 +89,7 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 		let reduced_costs = {};
 		for(let j=0;j<indices.length;j++) {
 			if(!basic_indices.includes(j)) {
-				reduced_costs[j] = c.data[j] - c_b.dot(B_inv.dot(A_.selectCol(j)))
+				reduced_costs[j] = c.data[j] - c_b.dot(B_inv.dot(A_.col(j)))
 			}
 		}
 
@@ -99,7 +106,7 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 			}
 		}
 
-		let d_b = B_inv.dot(A_.selectCol(chosen_j)).neg();
+		let d_b = B_inv.dot(A_.col(chosen_j)).neg();
 
 		if(d_b.data.every(x=>x>=0)) {
 			opt_infinity = true;
@@ -136,8 +143,8 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 
 	for(let x of basic_indices) {
 		if(x >= csize) {
-			console.log(988,x,N);
-			exit();
+			// console.log(988,x,N);
+			// exit();
 			contains_artifical = true;
 			break;
 		}
@@ -178,11 +185,14 @@ function lpSimplexFirstPhase(A1,b1,opt,phase) {
 			continue;
 		}
 
-		let B_small = Array(A.length);
-		for(let i = 0; i<A.length;i++) {
-			B_small[i] = Array(basic_indices_no_artificial.length);
+		console.log('NOT TESTED FROM HERE!!!');
+		exit(1);
+
+		let B_small = Array(A1.rsize);
+		for(let i = 0; i<A1.rsize;i++) {
+			B_small.data[i] = Array(basic_indices_no_artificial.length);
 			for(let j=0;j<basic_indices_no_artificial.length;j++) {
-				B_small[i][j] = A[i][basic_indices_no_artificial[j]];
+				B_small[i][j] = A.data[i][basic_indices_no_artificial[j]];
 			}
 		}
 
@@ -241,7 +251,6 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 	let obj_val = Infinity;
 
 	while (!optimal) {
-		// console.log('iter', iteration, 'obj_val',obj_val);
 		iteration++;
 
 		let B_inv = B.inv();
@@ -262,7 +271,7 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 		let reduced_costs = {};
 		for(let j=0;j<csize;j++) {
 			if(!basic_indices.includes(j)) {
-				reduced_costs[j] = c.data[j] - c_b.dot(B_inv.dot(A.selectCol(j)))
+				reduced_costs[j] = c.data[j] - c_b.dot(B_inv.dot(A.col(j)))
 			}
 		}
 
@@ -280,7 +289,9 @@ function lpSimplexSecondPhase(c,A,b,basic_indices,opt) {
 			}
 		}
 
-		let d_b = B_inv.dot(A.selectCol(chosen_j)).neg();
+// console.log(283,typeof chosen_j,'>'+chosen_j+'<');
+
+		let d_b = B_inv.dot(A.col(chosen_j)).neg();
 // console.log(284);
 		if(d_b.data.every(x=>x>=0)) {
 			opt_infinity = true;

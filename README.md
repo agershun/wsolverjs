@@ -1,9 +1,38 @@
-# wsolverjs - JavaScript linear programming solver (WIP)
+# wsolverjs - JavaScript linear programming solver
+
+Version: 0.1.0
 
 The solver supports the following methods:
 * brute-force
 * simplex 
 * interior-point methods)
+
+
+## Usage
+
+### In standard form
+```
+	let {solveLpSimplex, Matrix, Vector} = require('wsolverjs');
+
+	let A = Matrix.init([
+		[ 0, 1, 0, 0, 1, 0, 0],
+		[-1, 1, 0, 0, 0, 1, 0],
+		[ 1, 0,-1,-1, 0, 0, 1],
+		[ 0,-1, 1, 1, 0, 0, 0],
+	]);
+	let b = Vector.init([2,0,-6,6]);
+	let c = Vector.init([-1,4,9,9,0,0,0])
+	let x = solveLpBrute(c,A,b);
+```
+
+### Solve the problem from MPS file
+```
+	let {LpMps} = require('wsolverjs');
+
+	LpMps.read('prob1.mps').then(function(p) {
+		let g = p.solve();
+	});
+```
 
 ## Credits
 

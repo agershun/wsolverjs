@@ -306,6 +306,9 @@ class Matrix {
 	dot(d) {
 		if(d instanceof Vector) {
 		    if(this.csize != d.size){ 
+		    	console.log(209,this);
+		    	console.log(210,d);
+		    	console.trace('309,stack');;
 		    	throw "Matrix.dot(Vector): Matrix number of rows is not equal to vector size";
 		    }
 		    const r = Vector.zeros(this.rsize);

@@ -77,30 +77,31 @@ describe('301.Matrix 2', function() {
 		done();
 	});
 
-	it('301.5.Matrix.selectCol(number)', function(done) {
+	it('301.5.Matrix.col(number)', function(done) {
 		const a = Matrix.init([
 			[1,2,3],
 			[4,5,6],
 			[7,8,9],
 			[10,11,12]
 		]);
-		const b = a.selectCol(2);
+		const b = a.col(2);
 		assert.equal(b.size,4);
 		assert.deepEqual(b.data,[3,6,9,12]);
 		done();
 	});
 
-	it('301.6.Matrix.selectRow(number)', function(done) {
+	it('301.6.Matrix.row(number)', function(done) {
 		const a = Matrix.init([
 			[1,2,3],
 			[4,5,6],
 			[7,8,9],
 			[10,11,12]
 		]);
-		const b = a.selectRow(2);
+		const b = a.row(2);
 		assert.equal(b.size,3);
 		assert.deepEqual(b.data,[7,8,9]);
 		done();
 	});
+
 
 });

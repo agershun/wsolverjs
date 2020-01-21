@@ -1,5 +1,6 @@
 /*
 
+   Whatify Solver
    Copyright (c) Andrey Gershun (agershun@gmail.com), 2019
 
    Licensed under the Apache License, Version 2.0 (the "License");
